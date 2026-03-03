@@ -12,7 +12,7 @@ export default function BubbleChartComponent({ data }: { data: any[] }) {
   const groups = ['Tech', 'Finance', 'Health', 'Energy'];
 
   return (
-    <ChartCard title="Market Landscape" subtitle="Companies by revenue, growth & market cap">
+    <ChartCard title="Market Landscape" subtitle="Company positioning bubble chart">
       <ResponsiveContainer width="100%" height={240}>
         <ScatterChart>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />

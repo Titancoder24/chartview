@@ -10,7 +10,7 @@ export default function StreamGraphComponent({ data }: { data: any[] }) {
   };
 
   return (
-    <ChartCard title="Stream Graph" subtitle="Layered flow visualization">
+    <ChartCard title="Stream Graph" subtitle="Organic flow visualization">
       <ResponsiveContainer width="100%" height={240}>
         <AreaChart data={data} stackOffset="wiggle">
           <XAxis dataKey="month" tick={{ fill: theme.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />

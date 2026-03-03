@@ -193,7 +193,7 @@ function Gallery() {
 
             <div className="text-xs shrink-0" style={{ color: theme.textMuted }}>
               {filtered.length} component{filtered.length !== 1 ? 's' : ''}
-            </div>
+            </span>
           </div>
         </div>
       </div>

@@ -4,7 +4,6 @@ import { useTheme } from '../../context/ThemeContext';
 export default function PercentageBarComponent({ data }: { data: { name: string; value: number }[] }) {
   const { theme } = useTheme();
   const total = data.reduce((s, d) => s + d.value, 0);
-
   return (
     <ChartCard title="Share Breakdown" subtitle="100% stacked percentage bar">
       <div className="space-y-4">

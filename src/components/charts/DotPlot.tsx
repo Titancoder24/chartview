@@ -7,7 +7,7 @@ export default function DotPlotComponent({ data }: { data: any[] }) {
   return (
     <ChartCard title="Ranking Dot Plot" subtitle="Lollipop-style ranking chart">
       <div className="space-y-3">
-        {data.map((d, i) => (
+        {data.map((d: any, i: number) => (
           <div key={i} className="flex items-center gap-3">
             <span className="text-xs w-20 text-right" style={{ color: theme.textMuted }}>{d.name}</span>
             <div className="flex-1 relative h-4">

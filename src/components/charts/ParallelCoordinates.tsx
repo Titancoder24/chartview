@@ -15,7 +15,6 @@ export default function ParallelCoordinatesComponent() {
   const pad = 40;
   const axisGap = (svgW - pad * 2) / (axes.length - 1);
   const yScale = (v: number) => svgH - 30 - ((v / 100) * (svgH - 60));
-
   return (
     <ChartCard title="Parallel Coordinates" subtitle="Multi-dimensional product comparison">
       <svg width="100%" height={svgH + 20} viewBox={`0 0 ${svgW} ${svgH + 20}`} preserveAspectRatio="xMidYMid meet">

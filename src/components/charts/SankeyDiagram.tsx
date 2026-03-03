@@ -11,7 +11,6 @@ export default function SankeyDiagramComponent({ data }: { data: SankeyData }) {
   const { nodes, links } = data;
   const columns: number[][] = [[], [], []];
   const nodeCol: Record<number, number> = {};
-
   nodes.forEach((_, i) => {
     const isSource = links.some(l => l.source === i);
     const isTarget = links.some(l => l.target === i);
@@ -19,19 +18,16 @@ export default function SankeyDiagramComponent({ data }: { data: SankeyData }) {
     columns[col].push(i);
     nodeCol[i] = col;
   });
-
   const nodeValues: Record<number, number> = {};
   nodes.forEach((_, i) => {
     const outVal = links.filter(l => l.source === i).reduce((s, l) => s + l.value, 0);
     const inVal = links.filter(l => l.target === i).reduce((s, l) => s + l.value, 0);
     nodeValues[i] = Math.max(outVal, inVal);
   });
-
   const svgW = 500, svgH = 280;
   const colX = [30, 220, 410];
   const nodeW = 18;
   const maxVal = Math.max(...Object.values(nodeValues));
-
   const nodeY: Record<number, number> = {};
   const nodeH: Record<number, number> = {};
   columns.forEach((col) => {

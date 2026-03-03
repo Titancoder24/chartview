@@ -14,7 +14,6 @@ export default function BoxPlotComponent() {
   const maxVal = 100;
   const barW = 40;
   const scale = (v: number) => svgH - 20 - ((v / maxVal) * (svgH - 40));
-
   return (
     <ChartCard title="Box Plot" subtitle="Statistical distribution by quarter">
       <svg width="100%" height={svgH + 30} viewBox={`0 0 ${svgW} ${svgH + 30}`} preserveAspectRatio="xMidYMid meet">

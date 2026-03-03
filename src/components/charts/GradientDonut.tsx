@@ -7,7 +7,6 @@ export default function GradientDonutComponent() {
   const r = 70;
   const circumference = 2 * Math.PI * r;
   const dashOffset = circumference * (1 - value / 100);
-
   return (
     <ChartCard title="Completion Rate" subtitle="Gradient ring progress">
       <div className="flex flex-col items-center">

@@ -12,8 +12,7 @@ function Shimmer({ className, style, shimmerColor }: { className: string; style?
 export default function LoadingSkeletonComponent() {
   const { theme } = useTheme();
   return (
-    <ChartCard title="Loading Skeleton" subtitle="Chart placeholder states">
-      <style>{`@keyframes shimmer { 100% { transform: translateX(100%); } }`}</style>
+    <ChartCard title="Loading State" subtitle="Skeleton placeholder pattern">
       <div className="space-y-3">
         <div className="flex items-center gap-3">
           <Shimmer className="w-10 h-10 rounded-xl" shimmerColor={theme.gridColor} />

@@ -10,7 +10,7 @@ export default function PieChartComponent({ data }: { data: any[] }) {
   };
 
   return (
-    <ChartCard title="Device Distribution" subtitle="Traffic by device type">
+    <ChartCard title="Device Breakdown" subtitle="Traffic by device type">
       <ResponsiveContainer width="100%" height={240}>
         <RePieChart>
           <Pie data={data} cx="50%" cy="50%" outerRadius={90} dataKey="value" stroke="none" label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>

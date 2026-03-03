@@ -7,7 +7,7 @@ export default function MiniBarChartComponent({ data }: { data: any[] }) {
   return (
     <ChartCard title="Monthly Snapshot" subtitle="Compact inline bar chart">
       <div className="flex items-end gap-1.5 h-32">
-        {data.map((d, i) => {
+        {data.map((d: any, i: number) => {
           const h = (d.revenue / max) * 100;
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">

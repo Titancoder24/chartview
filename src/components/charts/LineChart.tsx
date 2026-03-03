@@ -10,7 +10,7 @@ export default function LineChartComponent({ data }: { data: any[] }) {
   };
 
   return (
-    <ChartCard title="Weekly Traffic" subtitle="Visitors and page views trend">
+    <ChartCard title="Weekly Traffic" subtitle="Visitors and page views">
       <ResponsiveContainer width="100%" height={240}>
         <ReLineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />

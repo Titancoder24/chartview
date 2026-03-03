@@ -18,7 +18,7 @@ export default function PolarAreaChartComponent() {
   const angleStep = (2 * Math.PI) / segments.length;
 
   return (
-    <ChartCard title="Polar Area Chart" subtitle="Traffic sources by magnitude">
+    <ChartCard title="Polar Area" subtitle="Department performance">
       <div className="flex justify-center">
         <svg width="220" height="220" viewBox="0 0 220 220">
           {[0.25, 0.5, 0.75, 1].map((t, i) => (
@@ -27,7 +27,8 @@ export default function PolarAreaChartComponent() {
           {segments.map((seg, i) => {
             const r = (seg.value / maxVal) * maxR;
             const startAngle = i * angleStep - Math.PI / 2;
-            const endAngle = (i + 1) * angleStep - Math.PI / 2;
+            const endAngle = startAngle + angleStep;
+            const r = (s.value / 100) * maxR;
             const x1 = cx + r * Math.cos(startAngle);
             const y1 = cy + r * Math.sin(startAngle);
             const x2 = cx + r * Math.cos(endAngle);

@@ -18,10 +18,9 @@ export default function ViolinPlotComponent() {
       <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
         {groups.map((g, gi) => {
           const cx = 80 + gi * 120;
-          const points = g.widths;
-          const step = violinH / (points.length - 1);
-          const leftPath = points.map((w, i) => `${cx - (w / 40) * maxW},${20 + i * step}`);
-          const rightPath = points.map((w, i) => `${cx + (w / 40) * maxW},${20 + i * step}`).reverse();
+          const step = violinH / (g.widths.length - 1);
+          const leftPath = g.widths.map((w, i) => `${cx - (w / 40) * maxW},${20 + i * step}`);
+          const rightPath = g.widths.map((w, i) => `${cx + (w / 40) * maxW},${20 + i * step}`).reverse();
           const path = `M ${leftPath.join(' L ')} L ${rightPath.join(' L ')} Z`;
           const color = theme.colors[gi % theme.colors.length];
           return (

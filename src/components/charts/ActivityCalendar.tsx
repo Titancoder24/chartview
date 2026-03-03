@@ -24,15 +24,10 @@ export default function ActivityCalendarComponent() {
           <div key={w} className="flex flex-col gap-[3px]">
             {Array.from({ length: 7 }, (_, d) => {
               const idx = w * 7 + d;
-              const val = data[idx];
               return (
-                <div key={d}
-                  className="w-3 h-3 rounded-[2px] cursor-pointer transition-all duration-150"
-                  style={{ backgroundColor: getColor(val), transform: hovered === idx ? 'scale(1.3)' : 'scale(1)' }}
-                  onMouseEnter={() => setHovered(idx)}
-                  onMouseLeave={() => setHovered(null)}
-                  title={`${val} contributions`}
-                />
+                <div key={d} className="w-3 h-3 rounded-[2px] cursor-pointer transition-all duration-150"
+                  style={{ backgroundColor: getColor(data[idx]), transform: hovered === idx ? 'scale(1.3)' : 'scale(1)' }}
+                  onMouseEnter={() => setHovered(idx)} onMouseLeave={() => setHovered(null)} title={`${data[idx]} contributions`} />
               );
             })}
           </div>

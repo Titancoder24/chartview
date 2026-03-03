@@ -16,6 +16,10 @@ export default function FunnelChartComponent({ data }: { data: FunnelItem[] }) {
                 <div className="h-9 rounded-lg flex items-center px-3 transition-all" style={{ width: `${w}%`, backgroundColor: theme.colors[i % theme.colors.length], minWidth: '60px' }}>
                   <span className="text-white text-xs font-medium whitespace-nowrap">{d.stage}</span>
                 </div>
+                <div className="w-20 text-right">
+                  <span className="text-sm font-semibold" style={{ color: theme.textPrimary }}>{d.value.toLocaleString()}</span>
+                  <span className="text-xs ml-1" style={{ color: theme.textMuted }}>{pct}%</span>
+                </div>
               </div>
               <div className="w-20 text-right">
                 <span className="text-sm font-semibold" style={{ color: theme.textPrimary }}>{d.value.toLocaleString()}</span>

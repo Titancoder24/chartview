@@ -10,7 +10,7 @@ export default function AreaComparisonChartComponent({ data }: { data: any[] }) 
   };
 
   return (
-    <ChartCard title="Year over Year" subtitle="This year vs last year comparison">
+    <ChartCard title="Year-over-Year" subtitle="This year vs last year">
       <ResponsiveContainer width="100%" height={240}>
         <AreaChart data={data}>
           <defs>

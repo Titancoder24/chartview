@@ -6,7 +6,7 @@ export default function GrowthBarComponent({ data }: { data: any[] }) {
   const { theme } = useTheme();
   const max = Math.max(...data.map(d => d.sales));
   return (
-    <ChartCard title="Growth Indicators" subtitle="Sales with growth badges">
+    <ChartCard title="Growth Indicators" subtitle="Sales with growth rate badges">
       <div className="space-y-3">
         {data.map((d, i) => (
           <div key={i} className="group">

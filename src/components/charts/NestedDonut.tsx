@@ -23,7 +23,7 @@ export default function NestedDonutComponent() {
   };
 
   return (
-    <ChartCard title="Nested Ring Chart" subtitle="Browser & device distribution">
+    <ChartCard title="Nested Rings" subtitle="Multi-level donut chart">
       <ResponsiveContainer width="100%" height={240}>
         <PieChart>
           <Pie data={outer} cx="50%" cy="50%" outerRadius={95} innerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
@@ -32,7 +32,7 @@ export default function NestedDonutComponent() {
           <Pie data={inner} cx="50%" cy="50%" outerRadius={62} innerRadius={42} paddingAngle={3} dataKey="value" stroke="none">
             {inner.map((_, i) => <Cell key={i} fill={theme.colors[(i + 5) % theme.colors.length]} />)}
           </Pie>
-          <Tooltip {...tooltip} />
+          <Tooltip {...tt} />
         </PieChart>
       </ResponsiveContainer>
     </ChartCard>
