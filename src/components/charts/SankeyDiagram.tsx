@@ -1,14 +1,5 @@
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
-
-const COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#7c3aed', '#818cf8', '#c4b5fd', '#4f46e5', '#22c55e', '#3b82f6', '#ef4444'];
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 interface SankeyData {
   nodes: string[];
@@ -16,6 +7,7 @@ interface SankeyData {
 }
 
 export default function SankeyDiagramComponent({ data }: { data: SankeyData }) {
+  const { theme } = useTheme();
   const { nodes, links } = data;
   const columns: number[][] = [[], [], []];
   const nodeCol: Record<number, number> = {};
@@ -65,17 +57,17 @@ export default function SankeyDiagramComponent({ data }: { data: SankeyData }) {
           const thick = Math.max((link.value / maxVal) * 30, 2);
           return (
             <path key={i} d={`M${sx},${sy} C${sx + 80},${sy} ${tx - 80},${ty} ${tx},${ty}`}
-              fill="none" stroke={COLORS[link.source % COLORS.length]} strokeWidth={thick} strokeOpacity={0.2} />
+              fill="none" stroke={theme.colors[link.source % theme.colors.length]} strokeWidth={thick} strokeOpacity={0.2} />
           );
         })}
         {nodes.map((name, i) => {
           if (nodeY[i] === undefined) return null;
           return (
             <g key={i}>
-              <rect x={colX[nodeCol[i]]} y={nodeY[i]} width={nodeW} height={nodeH[i]} rx={4} fill={COLORS[i % COLORS.length]} fillOpacity={0.8} />
+              <rect x={colX[nodeCol[i]]} y={nodeY[i]} width={nodeW} height={nodeH[i]} rx={4} fill={theme.colors[i % theme.colors.length]} fillOpacity={0.8} />
               <text x={colX[nodeCol[i]] + (nodeCol[i] === 2 ? nodeW + 6 : nodeCol[i] === 0 ? -6 : nodeW + 6)}
                 y={nodeY[i] + nodeH[i] / 2} textAnchor={nodeCol[i] === 0 ? 'end' : 'start'} dominantBaseline="middle"
-                fill="#9ca3af" fontSize={9}>{name}</text>
+                fill={theme.textMuted} fontSize={9}>{name}</text>
             </g>
           );
         })}

@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
-
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 function AnimatedNumber({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
   const [val, setVal] = useState(0);
@@ -35,16 +27,17 @@ const counters = [
 ];
 
 export default function NumberTickerComponent() {
+  const { theme } = useTheme();
   return (
     <ChartCard title="Live Counters" subtitle="Animated number tickers">
       <div className="grid grid-cols-2 gap-4">
         {counters.map((c, i) => (
           <div key={i} className="text-center py-4">
-            <p className="text-3xl font-bold text-white tabular-nums">
+            <p className="text-3xl font-bold tabular-nums" style={{ color: theme.textPrimary }}>
               <AnimatedNumber target={c.value} prefix={c.prefix} suffix={c.suffix} />
             </p>
-            <p className="text-gray-500 text-xs mt-1 flex items-center justify-center gap-1">
-              {c.label} <ArrowUpRight size={10} className="text-emerald-400" />
+            <p className="text-xs mt-1 flex items-center justify-center gap-1" style={{ color: theme.textMuted }}>
+              {c.label} <ArrowUpRight size={10} style={{ color: theme.positive }} />
             </p>
           </div>
         ))}

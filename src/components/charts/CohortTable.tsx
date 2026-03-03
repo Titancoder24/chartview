@@ -1,45 +1,23 @@
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
-
-function getRetentionColor(val: number) {
-  const t = val / 100;
-  return `rgba(99, 102, 241, ${0.1 + t * 0.8})`;
-}
-
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 export default function CohortTableComponent({ data }: { data: any[] }) {
-  const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'];
+  const { theme } = useTheme();
+  const weeks = ['W1','W2','W3','W4','W5','W6'];
+  const getCellBg = (val: number) => `${theme.colors[0]}${Math.round((val / 100) * 200).toString(16).padStart(2, '0')}`;
   return (
-    <ChartCard title="Cohort Retention" subtitle="Weekly retention by signup cohort">
+    <ChartCard title="Cohort Retention" subtitle="Weekly user retention rates">
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead>
-            <tr>
-              <th className="text-left text-gray-500 pb-2 pr-3">Cohort</th>
-              {weeks.map(w => <th key={w} className="text-center text-gray-500 pb-2 px-1">{w}</th>)}
-            </tr>
-          </thead>
+          <thead><tr>
+            <th className="text-left py-1 px-2 font-medium" style={{ color: theme.textMuted }}>Cohort</th>
+            {weeks.map(w => <th key={w} className="text-center py-1 px-2 font-medium" style={{ color: theme.textMuted }}>{w}</th>)}
+          </tr></thead>
           <tbody>
             {data.map((row, i) => (
               <tr key={i}>
-                <td className="text-gray-400 py-1 pr-3">{row.cohort}</td>
-                {weeks.map((w, wi) => {
-                  const key = `w${wi + 1}` as keyof typeof row;
-                  const val = row[key] as number;
-                  return (
-                    <td key={w} className="py-1 px-1">
-                      <div className="text-center rounded-md py-1.5 text-white font-medium transition-all duration-200 hover:scale-105"
-                        style={{ backgroundColor: getRetentionColor(val) }}>
-                        {val}%
-                      </div>
-                    </td>
-                  );
+                <td className="py-1 px-2 font-medium" style={{ color: theme.textSecondary }}>{row.cohort}</td>
+                {weeks.map((w, j) => { const key = w.toLowerCase().replace('w', 'w'); const val = row[key] ?? 0;
+                  return (<td key={j} className="text-center py-1 px-2"><div className="rounded-md py-1" style={{ backgroundColor: getCellBg(val) }}><span style={{ color: val > 60 ? '#fff' : theme.textPrimary }}>{val}%</span></div></td>);
                 })}
               </tr>
             ))}

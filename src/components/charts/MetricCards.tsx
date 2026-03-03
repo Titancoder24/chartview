@@ -1,30 +1,27 @@
-import { ArrowUpRight, ArrowDownRight, Activity, Users, DollarSign, Zap } from 'lucide-react';
-
+import { TrendingUp, Users, ShoppingCart, Activity } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 const metrics = [
-  { icon: DollarSign, label: 'MRR', value: '$42.5K', change: '+12.5%', up: true, color: '#6366f1' },
-  { icon: Users, label: 'DAU', value: '18,429', change: '+8.2%', up: true, color: '#8b5cf6' },
-  { icon: Activity, label: 'Latency', value: '42ms', change: '-15.3%', up: true, color: '#22c55e' },
-  { icon: Zap, label: 'Uptime', value: '99.98%', change: '+0.02%', up: true, color: '#a78bfa' },
+  { icon: TrendingUp, label: 'Revenue', value: '$48.2K', desc: '+12% from last month' },
+  { icon: Users, label: 'Users', value: '2,420', desc: '+180 this week' },
+  { icon: ShoppingCart, label: 'Orders', value: '1,210', desc: 'Avg $39.80' },
+  { icon: Activity, label: 'Uptime', value: '99.98%', desc: 'Last 30 days' },
 ];
-
 export default function MetricCardsComponent() {
+  const { theme } = useTheme();
   return (
     <div className="grid grid-cols-2 gap-3">
       {metrics.map((m, i) => {
         const Icon = m.icon;
         return (
-          <div key={i} className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-5 hover:border-[#334155] transition-all duration-300 group">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${m.color}15` }}>
-                <Icon size={16} style={{ color: m.color }} />
+          <div key={i} className="rounded-xl p-4 transition-all" style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.cardBorder}` }}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme.colors[i % theme.colors.length] + '18' }}>
+                <Icon size={14} style={{ color: theme.colors[i % theme.colors.length] }} />
               </div>
-              <div className={`flex items-center gap-0.5 text-xs font-medium ${m.up ? 'text-emerald-400' : 'text-red-400'}`}>
-                {m.up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                {m.change}
-              </div>
+              <span className="text-xs" style={{ color: theme.textMuted }}>{m.label}</span>
             </div>
-            <p className="text-white text-xl font-bold">{m.value}</p>
-            <p className="text-gray-500 text-xs mt-0.5">{m.label}</p>
+            <p className="text-lg font-bold" style={{ color: theme.textPrimary }}>{m.value}</p>
+            <p className="text-xs mt-1" style={{ color: theme.textMuted }}>{m.desc}</p>
           </div>
         );
       })}

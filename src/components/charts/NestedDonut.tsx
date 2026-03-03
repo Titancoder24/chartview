@@ -1,18 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
-
-const tooltip = {
-  contentStyle: { background: '#111827', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px', color: '#e5e7eb' },
-};
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 const outer = [
   { name: 'Chrome', value: 64 },
@@ -28,19 +16,21 @@ const inner = [
   { name: 'Tablet', value: 7 },
 ];
 
-const OUTER_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#4c1d95'];
-const INNER_COLORS = ['#818cf8', '#a78bfa', '#c4b5fd'];
-
 export default function NestedDonutComponent() {
+  const { theme } = useTheme();
+  const tooltip = {
+    contentStyle: { background: theme.tooltipBg, border: `1px solid ${theme.tooltipBorder}`, borderRadius: '12px', fontSize: '12px', color: theme.textPrimary },
+  };
+
   return (
     <ChartCard title="Nested Ring Chart" subtitle="Browser & device distribution">
       <ResponsiveContainer width="100%" height={240}>
         <PieChart>
           <Pie data={outer} cx="50%" cy="50%" outerRadius={95} innerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
-            {outer.map((_, i) => <Cell key={i} fill={OUTER_COLORS[i]} />)}
+            {outer.map((_, i) => <Cell key={i} fill={theme.colors[i % theme.colors.length]} />)}
           </Pie>
           <Pie data={inner} cx="50%" cy="50%" outerRadius={62} innerRadius={42} paddingAngle={3} dataKey="value" stroke="none">
-            {inner.map((_, i) => <Cell key={i} fill={INNER_COLORS[i]} />)}
+            {inner.map((_, i) => <Cell key={i} fill={theme.colors[(i + 5) % theme.colors.length]} />)}
           </Pie>
           <Tooltip {...tooltip} />
         </PieChart>

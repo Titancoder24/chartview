@@ -1,12 +1,5 @@
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 const rangeData = [
   { label: 'Jan', lo: 18, hi: 42 },
@@ -24,6 +17,7 @@ const rangeData = [
 ];
 
 export default function RangeBarComponent() {
+  const { theme } = useTheme();
   const max = 90;
   return (
     <ChartCard title="Temperature Range" subtitle="Monthly high-low range bars">
@@ -34,9 +28,9 @@ export default function RangeBarComponent() {
           return (
             <div key={i} className="flex-1 flex flex-col items-center relative h-full">
               <div className="absolute w-full flex flex-col items-center" style={{ bottom: `${bottom}%`, height: `${top - bottom}%` }}>
-                <div className="w-3 h-full rounded-full" style={{ background: 'linear-gradient(180deg, #6366f1, #8b5cf6)' }} />
+                <div className="w-3 h-full rounded-full" style={{ background: `linear-gradient(180deg, ${theme.colors[0]}, ${theme.colors[1]})` }} />
               </div>
-              <span className="absolute -bottom-5 text-gray-500 text-[9px]">{d.label}</span>
+              <span className="absolute -bottom-5 text-[9px]" style={{ color: theme.textMuted }}>{d.label}</span>
             </div>
           );
         })}
