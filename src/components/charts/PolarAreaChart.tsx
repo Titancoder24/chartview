@@ -28,7 +28,6 @@ export default function PolarAreaChartComponent() {
             const r = (seg.value / maxVal) * maxR;
             const startAngle = i * angleStep - Math.PI / 2;
             const endAngle = startAngle + angleStep;
-            const r = (s.value / 100) * maxR;
             const x1 = cx + r * Math.cos(startAngle);
             const y1 = cy + r * Math.sin(startAngle);
             const x2 = cx + r * Math.cos(endAngle);

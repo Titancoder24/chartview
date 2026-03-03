@@ -32,7 +32,7 @@ export default function NestedDonutComponent() {
           <Pie data={inner} cx="50%" cy="50%" outerRadius={62} innerRadius={42} paddingAngle={3} dataKey="value" stroke="none">
             {inner.map((_, i) => <Cell key={i} fill={theme.colors[(i + 5) % theme.colors.length]} />)}
           </Pie>
-          <Tooltip {...tt} />
+          <Tooltip {...tooltip} />
         </PieChart>
       </ResponsiveContainer>
     </ChartCard>

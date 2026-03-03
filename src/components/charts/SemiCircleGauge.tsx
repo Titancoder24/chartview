@@ -4,11 +4,11 @@ import { useTheme } from '../../context/ThemeContext';
 export default function SemiCircleGaugeComponent() {
   const { theme } = useTheme();
   const value = 76;
-  const r = 60;
-  const c = Math.PI * r;
-  const offset = c * (1 - value / 100);
+  const r = 80;
+  const circumference = Math.PI * r;
+  const dashOffset = circumference * (1 - value / 100);
   return (
-    <ChartCard title="Performance Score" subtitle="Semi-circle gauge indicator">
+    <ChartCard title="Performance Score" subtitle="Overall system performance">
       <div className="flex flex-col items-center">
         <svg width="200" height="120" viewBox="0 0 200 120">
           <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke={theme.gridColor} strokeWidth="12" strokeLinecap="round" />

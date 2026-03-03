@@ -2,8 +2,9 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import ChartCard from '../layout/ChartCard';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function TimeSeriesChartComponent({ data }: { data: any[] }) {
+export default function TimeSeriesChartComponent({ data: rawData }: { data: any[] }) {
   const { theme } = useTheme();
+  const displayData = rawData.slice(-30);
 
   const tooltip = {
     contentStyle: { background: theme.tooltipBg, border: `1px solid ${theme.tooltipBorder}`, borderRadius: '12px', fontSize: '12px', color: theme.textPrimary },

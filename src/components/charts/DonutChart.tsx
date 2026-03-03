@@ -16,8 +16,7 @@ export default function DonutChartComponent({ data }: { data: any[] }) {
           <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
             {data.map((_, i) => <Cell key={i} fill={theme.colors[i % theme.colors.length]} />)}
           </Pie>
-          <Tooltip {...tt} />
-          <Legend wrapperStyle={{ fontSize: '11px', color: theme.textSecondary }} />
+          <Tooltip {...tooltip} />
         </PieChart>
       </ResponsiveContainer>
     </ChartCard>
