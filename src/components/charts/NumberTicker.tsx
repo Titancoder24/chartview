@@ -1,53 +1,41 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
-
-function AnimatedNumber({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    const dur = 1500;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min((now - start) / dur, 1);
-      const ease = 1 - Math.pow(1 - t, 3);
-      setVal(Math.round(target * ease));
-      if (t < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [target]);
-  return <span>{prefix}{val.toLocaleString()}{suffix}</span>;
-}
-
-const counters = [
-  { label: 'Total Downloads', value: 1284930, prefix: '', suffix: '' },
-  { label: 'GitHub Stars', value: 48200, prefix: '', suffix: '' },
-  { label: 'Contributors', value: 842, prefix: '', suffix: '' },
-  { label: 'Weekly Active', value: 95400, prefix: '', suffix: '' },
+const tickers = [
+  { label: 'Total Revenue', target: 284500, prefix: '$', suffix: '' },
+  { label: 'Active Subscribers', target: 12847, prefix: '', suffix: '' },
+  { label: 'Conversion Rate', target: 324, prefix: '', suffix: '%', divider: 100 },
+  { label: 'Avg Response Time', target: 142, prefix: '', suffix: 'ms' },
 ];
 
 export default function NumberTickerComponent() {
+  const { theme } = useTheme();
+  const [values, setValues] = useState(tickers.map(() => 0));
+  useEffect(() => {
+    const duration = 1500;
+    const start = Date.now();
+    const animate = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValues(tickers.map(t => Math.round(t.target * eased)));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, []);
   return (
-    <ChartCard title="Live Counters" subtitle="Animated number tickers">
-      <div className="grid grid-cols-2 gap-4">
-        {counters.map((c, i) => (
-          <div key={i} className="text-center py-4">
-            <p className="text-3xl font-bold text-white tabular-nums">
-              <AnimatedNumber target={c.value} prefix={c.prefix} suffix={c.suffix} />
-            </p>
-            <p className="text-gray-500 text-xs mt-1 flex items-center justify-center gap-1">
-              {c.label} <ArrowUpRight size={10} className="text-emerald-400" />
-            </p>
-          </div>
-        ))}
+    <ChartCard title="Animated Counters" subtitle="Number ticker with easing">
+      <div className="grid grid-cols-2 gap-3">
+        {tickers.map((t, i) => {
+          const display = t.divider ? (values[i] / t.divider).toFixed(2) : values[i].toLocaleString();
+          return (
+            <div key={i} className="rounded-lg p-3 text-center" style={{ backgroundColor: theme.gridColor + '40' }}>
+              <p className="text-lg font-bold font-mono" style={{ color: theme.textPrimary }}>{t.prefix}{display}{t.suffix}</p>
+              <p className="text-xs mt-1" style={{ color: theme.textMuted }}>{t.label}</p>
+            </div>
+          );
+        })}
       </div>
     </ChartCard>
   );

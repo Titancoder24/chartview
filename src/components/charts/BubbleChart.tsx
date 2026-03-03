@@ -1,35 +1,27 @@
-import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
-
-const tooltip = {
-  contentStyle: { background: '#111827', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px', color: '#e5e7eb' },
-};
-
-const COLORS: Record<string, string> = { Tech: '#6366f1', Finance: '#8b5cf6', Health: '#a78bfa', Energy: '#7c3aed' };
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis } from 'recharts';
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function BubbleChartComponent({ data }: { data: any[] }) {
-  const groups = ['Tech', 'Finance', 'Health', 'Energy'];
+  const { theme } = useTheme();
+  const tt = { contentStyle: { background: theme.tooltipBg, border: `1px solid ${theme.tooltipBorder}`, borderRadius: '12px', fontSize: '12px', color: theme.textPrimary } };
+  const tech = data.filter(d => d.category === 'Tech');
+  const finance = data.filter(d => d.category === 'Finance');
+  const health = data.filter(d => d.category === 'Health');
+  const energy = data.filter(d => d.category === 'Energy');
   return (
-    <ChartCard title="Market Landscape" subtitle="Companies by revenue, growth & market cap">
+    <ChartCard title="Market Landscape" subtitle="Company positioning bubble chart">
       <ResponsiveContainer width="100%" height={240}>
         <ScatterChart>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-          <XAxis dataKey="x" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} name="Revenue" />
-          <YAxis dataKey="y" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} name="Growth" />
-          <ZAxis dataKey="z" range={[40, 500]} />
-          <Tooltip {...tooltip} />
-          {groups.map(g => (
-            <Scatter key={g} name={g} data={data.filter(d => d.category === g)} fill={COLORS[g]} fillOpacity={0.6} />
-          ))}
+          <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />
+          <XAxis dataKey="x" tick={{ fill: theme.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} name="Growth" />
+          <YAxis dataKey="y" tick={{ fill: theme.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} name="Revenue" />
+          <ZAxis dataKey="z" range={[40, 600]} />
+          <Tooltip {...tt} />
+          <Scatter data={tech} fill={theme.colors[0]} fillOpacity={0.6} />
+          <Scatter data={finance} fill={theme.colors[1]} fillOpacity={0.6} />
+          <Scatter data={health} fill={theme.colors[2]} fillOpacity={0.6} />
+          <Scatter data={energy} fill={theme.colors[3]} fillOpacity={0.6} />
         </ScatterChart>
       </ResponsiveContainer>
     </ChartCard>

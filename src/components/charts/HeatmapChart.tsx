@@ -1,61 +1,29 @@
-import { useState } from 'react';
-
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
-
-function getColor(val: number, max: number) {
-  const t = val / max;
-  const r = Math.round(99 * (1 - t) + 99 * t);
-  const g = Math.round(102 * (1 - t) + 102 * t);
-  const b = Math.round(241 * t + 30 * (1 - t));
-  return `rgba(${r}, ${g}, ${b}, ${0.15 + t * 0.85})`;
-}
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function HeatmapChartComponent({ data }: { data: { hour: string; day: string; value: number }[] }) {
-  const [hovered, setHovered] = useState<number | null>(null);
+  const { theme } = useTheme();
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const hours = Array.from(new Set(data.map(d => d.hour)));
-  const displayHours = hours.filter((_, i) => i % 3 === 0);
-  const max = Math.max(...data.map(d => d.value));
-
+  const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+  const maxVal = Math.max(...data.map(d => d.value));
+  const getColor = (val: number) => {
+    const opacity = Math.max(0.05, val / maxVal);
+    return `${theme.colors[0]}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
+  };
   return (
     <ChartCard title="Activity Heatmap" subtitle="Hourly activity by day of week">
       <div className="overflow-x-auto">
-        <div className="min-w-[400px]">
-          <div className="flex gap-0.5 mb-1 ml-10">
-            {displayHours.map(h => (
-              <div key={h} className="text-gray-500 text-[9px]" style={{ width: `${100 / displayHours.length}%` }}>{h}</div>
-            ))}
+        <div className="inline-flex gap-0.5">
+          <div className="flex flex-col gap-0.5 pr-1 pt-4">
+            {days.map(d => <div key={d} className="h-4 flex items-center"><span className="text-[9px]" style={{ color: theme.textMuted }}>{d}</span></div>)}
           </div>
-          {days.map((day) => (
-            <div key={day} className="flex items-center gap-1 mb-0.5">
-              <div className="w-8 text-gray-500 text-[10px] text-right">{day}</div>
-              <div className="flex-1 flex gap-0.5">
-                {hours.map((hour, hi) => {
-                  const item = data.find(d => d.day === day && d.hour === hour);
-                  const idx = days.indexOf(day) * hours.length + hi;
-                  return (
-                    <div
-                      key={hour}
-                      className="flex-1 h-5 rounded-[2px] cursor-pointer transition-all duration-150"
-                      style={{
-                        backgroundColor: getColor(item?.value || 0, max),
-                        transform: hovered === idx ? 'scale(1.2)' : 'scale(1)',
-                      }}
-                      onMouseEnter={() => setHovered(idx)}
-                      onMouseLeave={() => setHovered(null)}
-                      title={`${day} ${hour}: ${item?.value || 0}`}
-                    />
-                  );
-                })}
-              </div>
+          {hours.filter((_, i) => i % 2 === 0).map(hour => (
+            <div key={hour} className="flex flex-col gap-0.5">
+              <span className="text-[8px] text-center mb-0.5" style={{ color: theme.textMuted }}>{hour.split(':')[0]}</span>
+              {days.map(day => {
+                const cell = data.find(d => d.hour === hour && d.day === day);
+                return <div key={day} className="w-4 h-4 rounded-[2px]" style={{ backgroundColor: getColor(cell?.value || 0) }} title={`${day} ${hour}: ${cell?.value || 0}`} />;
+              })}
             </div>
           ))}
         </div>

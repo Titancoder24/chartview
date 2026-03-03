@@ -1,48 +1,36 @@
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 interface Candle { date: string; open: number; high: number; low: number; close: number; volume: number }
 
 export default function CandlestickChartComponent({ data }: { data: Candle[] }) {
-  const allValues = data.flatMap(d => [d.high, d.low]);
-  const min = Math.min(...allValues) - 2;
-  const max = Math.max(...allValues) + 2;
-  const range = max - min;
-  const svgH = 200;
-  const candleW = 16;
-  const gap = 6;
-  const svgW = data.length * (candleW + gap) + gap;
-
-  const toY = (v: number) => svgH - ((v - min) / range) * svgH;
+  const { theme } = useTheme();
+  const svgW = 440, svgH = 200;
+  const allVals = data.flatMap(d => [d.high, d.low]);
+  const minVal = Math.min(...allVals);
+  const maxVal = Math.max(...allVals);
+  const range = maxVal - minVal || 1;
+  const candleW = Math.min(24, (svgW - 40) / data.length - 4);
+  const y = (v: number) => 15 + ((maxVal - v) / range) * (svgH - 30);
 
   return (
     <ChartCard title="Stock Price" subtitle="OHLC candlestick chart">
-      <div className="overflow-x-auto">
-        <svg width="100%" height={svgH + 30} viewBox={`0 0 ${svgW} ${svgH + 30}`} preserveAspectRatio="xMidYMid meet">
-          {data.map((d, i) => {
-            const x = gap + i * (candleW + gap);
-            const bull = d.close >= d.open;
-            const color = bull ? '#22c55e' : '#ef4444';
-            const bodyTop = toY(Math.max(d.open, d.close));
-            const bodyBottom = toY(Math.min(d.open, d.close));
-            const bodyH = Math.max(bodyBottom - bodyTop, 1);
-            return (
-              <g key={i}>
-                <line x1={x + candleW / 2} y1={toY(d.high)} x2={x + candleW / 2} y2={toY(d.low)} stroke={color} strokeWidth={1.5} />
-                <rect x={x} y={bodyTop} width={candleW} height={bodyH} rx={2} fill={bull ? color : color} fillOpacity={bull ? 0.3 : 0.8} stroke={color} strokeWidth={1} />
-                <text x={x + candleW / 2} y={svgH + 15} textAnchor="middle" fill="#6b7280" fontSize={8}>{d.date.slice(4)}</text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+      <svg width="100%" height={svgH + 25} viewBox={`0 0 ${svgW} ${svgH + 25}`} preserveAspectRatio="xMidYMid meet">
+        {data.map((d, i) => {
+          const x = 20 + i * ((svgW - 40) / data.length) + ((svgW - 40) / data.length - candleW) / 2;
+          const bull = d.close >= d.open;
+          const color = bull ? theme.positive : theme.negative;
+          const bodyTop = y(Math.max(d.open, d.close));
+          const bodyH = Math.max(Math.abs(y(d.open) - y(d.close)), 1);
+          return (
+            <g key={i}>
+              <line x1={x + candleW / 2} y1={y(d.high)} x2={x + candleW / 2} y2={y(d.low)} stroke={color} strokeWidth={1.5} />
+              <rect x={x} y={bodyTop} width={candleW} height={bodyH} rx={2} fill={bull ? color : color} fillOpacity={bull ? 0.3 : 0.8} stroke={color} strokeWidth={1} />
+              <text x={x + candleW / 2} y={svgH + 15} textAnchor="middle" fill={theme.textMuted} fontSize={8}>{d.date.split(' ')[1]}</text>
+            </g>
+          );
+        })}
+      </svg>
     </ChartCard>
   );
 }

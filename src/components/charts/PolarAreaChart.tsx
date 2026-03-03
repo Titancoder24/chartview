@@ -1,61 +1,41 @@
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
-const COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#7c3aed', '#c4b5fd', '#4c1d95'];
-const segments = [
-  { label: 'Organic', value: 35 },
-  { label: 'Paid', value: 25 },
-  { label: 'Social', value: 18 },
-  { label: 'Email', value: 12 },
-  { label: 'Referral', value: 7 },
-  { label: 'Direct', value: 3 },
+const sectors = [
+  { label: 'Sales', value: 80 },
+  { label: 'Marketing', value: 65 },
+  { label: 'Support', value: 72 },
+  { label: 'Engineering', value: 90 },
+  { label: 'Design', value: 58 },
+  { label: 'HR', value: 45 },
 ];
 
 export default function PolarAreaChartComponent() {
-  const cx = 110, cy = 110;
-  const maxR = 90;
-  const maxVal = Math.max(...segments.map(s => s.value));
-  const angleStep = (2 * Math.PI) / segments.length;
-
+  const { theme } = useTheme();
+  const cx = 120, cy = 120, maxR = 90;
+  const angleStep = (2 * Math.PI) / sectors.length;
   return (
-    <ChartCard title="Polar Area Chart" subtitle="Traffic sources by magnitude">
+    <ChartCard title="Polar Area" subtitle="Department performance">
       <div className="flex justify-center">
-        <svg width="220" height="220" viewBox="0 0 220 220">
-          {[0.25, 0.5, 0.75, 1].map((t, i) => (
-            <circle key={i} cx={cx} cy={cy} r={maxR * t} fill="none" stroke="#1e293b" strokeWidth={0.5} />
-          ))}
-          {segments.map((seg, i) => {
-            const r = (seg.value / maxVal) * maxR;
+        <svg width="240" height="240" viewBox="0 0 240 240">
+          {sectors.map((s, i) => {
             const startAngle = i * angleStep - Math.PI / 2;
-            const endAngle = (i + 1) * angleStep - Math.PI / 2;
+            const endAngle = startAngle + angleStep;
+            const r = (s.value / 100) * maxR;
             const x1 = cx + r * Math.cos(startAngle);
             const y1 = cy + r * Math.sin(startAngle);
             const x2 = cx + r * Math.cos(endAngle);
             const y2 = cy + r * Math.sin(endAngle);
             const largeArc = angleStep > Math.PI ? 1 : 0;
-            return (
-              <path key={i}
-                d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`}
-                fill={COLORS[i]} fillOpacity={0.6} stroke={COLORS[i]} strokeWidth={1} />
-            );
+            const d = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`;
+            return <path key={i} d={d} fill={theme.colors[i % theme.colors.length]} fillOpacity={0.6} stroke={theme.cardBg} strokeWidth={2} />;
           })}
-          {segments.map((seg, i) => {
-            const midAngle = (i + 0.5) * angleStep - Math.PI / 2;
-            const labelR = maxR + 15;
-            const lx = cx + labelR * Math.cos(midAngle);
-            const ly = cy + labelR * Math.sin(midAngle);
-            return (
-              <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill="#9ca3af" fontSize={8}>
-                {seg.label}
-              </text>
-            );
+          {sectors.map((s, i) => {
+            const angle = i * angleStep - Math.PI / 2 + angleStep / 2;
+            const lr = maxR + 12;
+            const lx = cx + lr * Math.cos(angle);
+            const ly = cy + lr * Math.sin(angle);
+            return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill={theme.textMuted} fontSize={8}>{s.label}</text>;
           })}
         </svg>
       </div>

@@ -1,30 +1,21 @@
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
-interface ProgressItem { label: string; progress: number; color: string }
+interface ProgressItem { label: string; progress: number; color?: string }
 
 export default function ProgressBarsComponent({ data }: { data: ProgressItem[] }) {
+  const { theme } = useTheme();
   return (
-    <ChartCard title="Project Milestones" subtitle="Progress tracking across workstreams">
+    <ChartCard title="Project Status" subtitle="Completion percentage">
       <div className="space-y-4">
-        {data.map((item, i) => (
+        {data.map((p, i) => (
           <div key={i}>
             <div className="flex justify-between mb-1.5">
-              <span className="text-gray-300 text-xs font-medium">{item.label}</span>
-              <span className="text-gray-400 text-xs">{item.progress}%</span>
+              <span className="text-xs font-medium" style={{ color: theme.textSecondary }}>{p.label}</span>
+              <span className="text-xs font-semibold" style={{ color: theme.textPrimary }}>{p.progress}%</span>
             </div>
-            <div className="h-2 rounded-full bg-[#111827] overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-1000"
-                style={{ width: `${item.progress}%`, background: `linear-gradient(90deg, ${item.color}, ${item.color}cc)` }}
-              />
+            <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: theme.gridColor }}>
+              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${p.progress}%`, backgroundColor: theme.colors[i % theme.colors.length] }} />
             </div>
           </div>
         ))}

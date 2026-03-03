@@ -1,28 +1,19 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
-
-const tooltip = {
-  contentStyle: { background: '#111827', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px', color: '#e5e7eb' },
-};
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function HorizontalBarChartComponent({ data }: { data: any[] }) {
+  const { theme } = useTheme();
+  const tt = { contentStyle: { background: theme.tooltipBg, border: `1px solid ${theme.tooltipBorder}`, borderRadius: '12px', fontSize: '12px', color: theme.textPrimary } };
   return (
-    <ChartCard title="Developer Satisfaction" subtitle="Language rankings by satisfaction score">
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
-          <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="name" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
-          <Tooltip {...tooltip} />
-          <Bar dataKey="value" fill="#6366f1" radius={[0, 6, 6, 0]} barSize={18} />
+    <ChartCard title="Developer Satisfaction" subtitle="Language preference scores">
+      <ResponsiveContainer width="100%" height={260}>
+        <BarChart data={data} layout="vertical">
+          <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} horizontal={false} />
+          <XAxis type="number" tick={{ fill: theme.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis dataKey="name" type="category" tick={{ fill: theme.textSecondary, fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
+          <Tooltip {...tt} />
+          <Bar dataKey="value" fill={theme.colors[0]} radius={[0, 6, 6, 0]} barSize={16} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>

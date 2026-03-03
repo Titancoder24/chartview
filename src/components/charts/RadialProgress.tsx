@@ -1,46 +1,33 @@
-const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-[#0a0f1a] border border-[#1e293b] rounded-2xl p-6 hover:border-[#334155] transition-all duration-300">
-    <div className="mb-4">
-      <h3 className="text-white text-sm font-semibold">{title}</h3>
-      {subtitle && <p className="text-gray-500 text-xs mt-1">{subtitle}</p>}
-    </div>
-    {children}
-  </div>
-);
+import ChartCard from '../layout/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
-function Ring({ value, max, label, color, size = 80 }: { value: number; max: number; label: string; color: string; size?: number }) {
-  const pct = value / max;
-  const r = (size - 8) / 2;
-  const circumference = 2 * Math.PI * r;
-  const dashOffset = circumference * (1 - pct);
-  return (
-    <div className="flex flex-col items-center">
-      <svg width={size} height={size}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e293b" strokeWidth="6" />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="6"
-          strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          style={{ transition: 'stroke-dashoffset 1s ease-in-out' }} />
-        <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="14" fontWeight="bold">
-          {Math.round(pct * 100)}%
-        </text>
-      </svg>
-      <p className="text-gray-400 text-xs mt-2">{label}</p>
-    </div>
-  );
-}
+const items = [
+  { label: 'Design', value: 85 },
+  { label: 'Dev', value: 62 },
+  { label: 'Testing', value: 45 },
+  { label: 'Deploy', value: 91 },
+];
 
 export default function RadialProgressComponent() {
-  const items = [
-    { value: 85, max: 100, label: 'Design', color: '#6366f1' },
-    { value: 62, max: 100, label: 'Backend', color: '#8b5cf6' },
-    { value: 45, max: 100, label: 'Testing', color: '#a78bfa' },
-    { value: 91, max: 100, label: 'Deploy', color: '#22c55e' },
-  ];
+  const { theme } = useTheme();
   return (
     <ChartCard title="Sprint Progress" subtitle="Radial progress indicators">
       <div className="flex justify-around">
-        {items.map((item, i) => <Ring key={i} {...item} />)}
+        {items.map((item, i) => {
+          const r = 28;
+          const c = 2 * Math.PI * r;
+          const offset = c * (1 - item.value / 100);
+          return (
+            <div key={i} className="flex flex-col items-center">
+              <svg width="68" height="68" viewBox="0 0 68 68">
+                <circle cx="34" cy="34" r={r} fill="none" stroke={theme.gridColor} strokeWidth="5" />
+                <circle cx="34" cy="34" r={r} fill="none" stroke={theme.colors[i % theme.colors.length]} strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset} transform="rotate(-90 34 34)" />
+                <text x="34" y="34" textAnchor="middle" dominantBaseline="middle" fill={theme.textPrimary} fontSize="13" fontWeight="700">{item.value}%</text>
+              </svg>
+              <span className="text-xs mt-1" style={{ color: theme.textMuted }}>{item.label}</span>
+            </div>
+          );
+        })}
       </div>
     </ChartCard>
   );
