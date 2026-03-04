@@ -1,338 +1,219 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import {
-  Book,
-  Code,
-  Palette,
-  Cpu,
-  Package,
-  ArrowLeft,
-  ExternalLink,
-  Layers,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 
-/* ─── Syntax-highlighted code block ─── */
-function CodeBlock({ children, language = 'tsx' }: { children: string; language?: string }) {
-  const highlighted = highlightSyntax(children.trim(), language);
+/* ------------------------------------------------------------------ */
+/*  Navigation definitions                                             */
+/* ------------------------------------------------------------------ */
 
+const NAV_SECTIONS = [
+  { id: 'getting-started', label: 'Getting Started' },
+  { id: 'components', label: 'Components' },
+  { id: 'theming', label: 'Theming' },
+  { id: 'mcp', label: 'MCP Integration' },
+  { id: 'api', label: 'API Reference' },
+] as const;
+
+/* ------------------------------------------------------------------ */
+/*  Code Block                                                         */
+/* ------------------------------------------------------------------ */
+
+function CodeBlock({ children, filename }: { children: string; filename?: string }) {
+  const { theme } = useTheme();
   return (
     <div
-      style={{
-        backgroundColor: '#1e1e2e',
-        border: '1px solid #313244',
-        borderRadius: '12px',
-        overflow: 'hidden',
-      }}
+      className="rounded-xl overflow-hidden"
+      style={{ backgroundColor: '#0f0f0f', border: `1px solid ${theme.cardBorder}` }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '10px 16px',
-          borderBottom: '1px solid #313244',
-          backgroundColor: '#181825',
-        }}
-      >
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: '#f38ba8',
-              display: 'inline-block',
-            }}
-          />
-          <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: '#a6e3a1',
-              display: 'inline-block',
-            }}
-          />
-          <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: '#f9e2af',
-              display: 'inline-block',
-            }}
-          />
-        </div>
-        <span
-          style={{
-            fontSize: '11px',
-            color: '#6c7086',
-            fontFamily: 'monospace',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}
+      {filename && (
+        <div
+          className="px-4 py-2 flex items-center gap-2"
+          style={{ borderBottom: `1px solid ${theme.cardBorder}` }}
         >
-          {language}
-        </span>
-      </div>
+          <span
+            className="text-[11px] font-mono"
+            style={{ color: theme.textMuted }}
+          >
+            {filename}
+          </span>
+        </div>
+      )}
       <pre
-        style={{
-          margin: 0,
-          padding: '20px',
-          overflowX: 'auto',
-          fontSize: '13px',
-          lineHeight: '1.7',
-          fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
-        }}
+        className="p-5 text-[13px] leading-relaxed overflow-x-auto"
+        style={{ color: '#e2e8f0', fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace)' }}
       >
-        <code dangerouslySetInnerHTML={{ __html: highlighted }} />
+        <code>{children.trim()}</code>
       </pre>
     </div>
   );
 }
 
-/* ─── Minimal monokai-style syntax highlighter ─── */
-function highlightSyntax(code: string, language: string): string {
-  let escaped = code
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+/* ------------------------------------------------------------------ */
+/*  Inline code                                                        */
+/* ------------------------------------------------------------------ */
 
-  if (language === 'bash' || language === 'shell') {
-    escaped = escaped.replace(
-      /^(\$\s)(.*)$/gm,
-      '<span style="color:#a6e3a1">$1</span><span style="color:#cdd6f4">$2</span>'
-    );
-    escaped = escaped.replace(/(#.*)$/gm, '<span style="color:#6c7086">$1</span>');
-    return escaped;
-  }
-
-  if (language === 'json') {
-    escaped = escaped.replace(
-      /("(?:[^"\\]|\\.)*")\s*:/g,
-      '<span style="color:#89b4fa">$1</span>:'
-    );
-    escaped = escaped.replace(
-      /:\s*("(?:[^"\\]|\\.)*")/g,
-      ': <span style="color:#a6e3a1">$1</span>'
-    );
-    escaped = escaped.replace(
-      /:\s*(\d+)/g,
-      ': <span style="color:#fab387">$1</span>'
-    );
-    escaped = escaped.replace(
-      /:\s*(true|false|null)/g,
-      ': <span style="color:#fab387">$1</span>'
-    );
-    return escaped;
-  }
-
-  // TSX / TypeScript highlighting
-  // Strings
-  escaped = escaped.replace(
-    /('(?:[^'\\]|\\.)*')/g,
-    '<span style="color:#a6e3a1">$1</span>'
-  );
-  escaped = escaped.replace(
-    /("(?:[^"\\]|\\.)*")/g,
-    '<span style="color:#a6e3a1">$1</span>'
-  );
-  escaped = escaped.replace(
-    /(`(?:[^`\\]|\\.)*`)/g,
-    '<span style="color:#a6e3a1">$1</span>'
-  );
-
-  // Keywords
-  const keywords =
-    'import|from|export|default|function|return|const|let|var|if|else|interface|type|extends|new|class|async|await';
-  escaped = escaped.replace(
-    new RegExp(`\\b(${keywords})\\b`, 'g'),
-    '<span style="color:#cba6f7">$1</span>'
-  );
-
-  // JSX tags
-  escaped = escaped.replace(
-    /(&lt;\/?)([\w.]+)/g,
-    '$1<span style="color:#89b4fa">$2</span>'
-  );
-
-  // Comments
-  escaped = escaped.replace(
-    /(\/\/.*$)/gm,
-    '<span style="color:#6c7086">$1</span>'
-  );
-  escaped = escaped.replace(
-    /(\/\*[\s\S]*?\*\/)/g,
-    '<span style="color:#6c7086">$1</span>'
-  );
-
-  // Numbers
-  escaped = escaped.replace(
-    /\b(\d+\.?\d*)\b/g,
-    '<span style="color:#fab387">$1</span>'
-  );
-
-  // Types (PascalCase words that aren't JSX)
-  escaped = escaped.replace(
-    /:\s*([A-Z]\w+)/g,
-    ': <span style="color:#f9e2af">$1</span>'
-  );
-
-  return escaped;
-}
-
-/* ─── Section wrapper ─── */
-function Section({
-  id,
-  children,
-  noBorder,
-}: {
-  id: string;
-  children: React.ReactNode;
-  noBorder?: boolean;
-}) {
+function InlineCode({ children }: { children: string }) {
   const { theme } = useTheme();
   return (
-    <section
-      id={id}
+    <code
+      className="text-[13px] px-1.5 py-0.5 rounded-md font-mono"
       style={{
-        borderBottom: noBorder ? 'none' : `1px solid ${theme.cardBorder}`,
+        backgroundColor: `${theme.accent}10`,
+        color: theme.accent,
       }}
-      className="scroll-mt-20"
     >
-      <div className="max-w-4xl mx-auto px-6 py-16 md:py-20">{children}</div>
-    </section>
+      {children}
+    </code>
   );
 }
 
-/* ─── Props table ─── */
-function PropsTable({
-  rows,
-}: {
-  rows: { prop: string; type: string; default: string; description: string }[];
-}) {
+/* ------------------------------------------------------------------ */
+/*  Props table                                                        */
+/* ------------------------------------------------------------------ */
+
+function PropsTable({ rows }: { rows: { prop: string; type: string; default: string; desc: string }[] }) {
   const { theme } = useTheme();
   return (
     <div
-      style={{
-        borderRadius: '12px',
-        border: `1px solid ${theme.cardBorder}`,
-        overflow: 'hidden',
-      }}
+      className="rounded-xl overflow-hidden"
+      style={{ border: `1px solid ${theme.cardBorder}` }}
     >
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ backgroundColor: theme.cardBg }}>
-            {['Prop', 'Type', 'Default', 'Description'].map((h) => (
-              <th
-                key={h}
-                style={{
-                  textAlign: 'left',
-                  padding: '12px 16px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: theme.textMuted,
-                  borderBottom: `1px solid ${theme.cardBorder}`,
-                }}
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr
-              key={row.prop}
-              style={{
-                backgroundColor: i % 2 === 0 ? 'transparent' : `${theme.cardBg}80`,
-              }}
-            >
-              <td
-                style={{
-                  padding: '12px 16px',
-                  fontFamily: 'monospace',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: theme.accent,
-                  borderBottom: `1px solid ${theme.cardBorder}`,
-                }}
-              >
-                {row.prop}
-              </td>
-              <td
-                style={{
-                  padding: '12px 16px',
-                  fontFamily: 'monospace',
-                  fontSize: '13px',
-                  color: theme.textSecondary,
-                  borderBottom: `1px solid ${theme.cardBorder}`,
-                }}
-              >
-                {row.type}
-              </td>
-              <td
-                style={{
-                  padding: '12px 16px',
-                  fontFamily: 'monospace',
-                  fontSize: '13px',
-                  color: theme.textMuted,
-                  borderBottom: `1px solid ${theme.cardBorder}`,
-                }}
-              >
-                {row.default}
-              </td>
-              <td
-                style={{
-                  padding: '12px 16px',
-                  fontSize: '14px',
-                  color: theme.textSecondary,
-                  lineHeight: '1.5',
-                  borderBottom: `1px solid ${theme.cardBorder}`,
-                }}
-              >
-                {row.description}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ backgroundColor: theme.cardBg }}>
+              {['Prop', 'Type', 'Default', 'Description'].map((h) => (
+                <th
+                  key={h}
+                  className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                  style={{
+                    color: theme.textMuted,
+                    borderBottom: `1px solid ${theme.cardBorder}`,
+                  }}
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr
+                key={row.prop}
+                style={{
+                  backgroundColor: i % 2 === 0 ? 'transparent' : `${theme.cardBg}60`,
+                }}
+              >
+                <td
+                  className="px-4 py-3 text-[13px] font-semibold font-mono whitespace-nowrap"
+                  style={{ color: theme.accent, borderBottom: `1px solid ${theme.cardBorder}` }}
+                >
+                  {row.prop}
+                </td>
+                <td
+                  className="px-4 py-3 text-[13px] font-mono whitespace-nowrap"
+                  style={{ color: theme.textSecondary, borderBottom: `1px solid ${theme.cardBorder}` }}
+                >
+                  {row.type}
+                </td>
+                <td
+                  className="px-4 py-3 text-[13px] font-mono"
+                  style={{ color: theme.textMuted, borderBottom: `1px solid ${theme.cardBorder}` }}
+                >
+                  {row.default}
+                </td>
+                <td
+                  className="px-4 py-3 text-sm leading-relaxed"
+                  style={{ color: theme.textSecondary, borderBottom: `1px solid ${theme.cardBorder}` }}
+                >
+                  {row.desc}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-/* ─── Sidebar navigation items ─── */
-const navItems = [
-  { id: 'getting-started', label: 'Getting Started', icon: Package },
-  { id: 'components', label: 'Components', icon: Layers },
-  { id: 'theming', label: 'Theming', icon: Palette },
-  { id: 'mcp-integration', label: 'MCP Integration', icon: Cpu },
-  { id: 'api-reference', label: 'API Reference', icon: Code },
-];
+/* ------------------------------------------------------------------ */
+/*  Sidebar nav link                                                   */
+/* ------------------------------------------------------------------ */
 
-/* ═══════════════════════════════════════════════════
-   MAIN DOCUMENTATION PAGE
-   ═══════════════════════════════════════════════════ */
+function SidebarLink({ id, label, active }: { id: string; label: string; active: boolean }) {
+  const { theme } = useTheme();
+  return (
+    <a
+      href={`#${id}`}
+      className="block px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors"
+      style={{
+        color: active ? theme.accent : theme.textMuted,
+        backgroundColor: active ? `${theme.accent}08` : 'transparent',
+      }}
+    >
+      {label}
+    </a>
+  );
+}
+
+/* ================================================================== */
+/*  DOCUMENTATION PAGE                                                 */
+/* ================================================================== */
+
 export default function Documentation() {
   const { theme } = useTheme();
+  const [activeSection, setActiveSection] = useState('getting-started');
+
+  /* --- scroll-spy --- */
+  const handleScroll = useCallback(() => {
+    const offsets = NAV_SECTIONS.map(({ id }) => {
+      const el = document.getElementById(id);
+      return { id, top: el ? el.getBoundingClientRect().top : Infinity };
+    });
+    const current = offsets.reduce((best, cur) =>
+      cur.top <= 120 && cur.top > best.top ? cur : best,
+      { id: offsets[0].id, top: -Infinity },
+    );
+    setActiveSection(current.id);
+  }, []);
 
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       document.documentElement.style.scrollBehavior = '';
+      window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [handleScroll]);
+
+  /* --- helpers --- */
+  const sectionHeading = (title: string, subtitle: string) => (
+    <>
+      <h2
+        className="text-2xl font-bold tracking-tight mb-3"
+        style={{ color: theme.textPrimary }}
+      >
+        {title}
+      </h2>
+      <p
+        className="text-base leading-relaxed mb-8 max-w-2xl"
+        style={{ color: theme.textSecondary }}
+      >
+        {subtitle}
+      </p>
+    </>
+  );
+
+  /* ================================================================ */
 
   return (
     <div
-      className="min-h-screen transition-colors duration-300"
+      className="min-h-screen transition-colors duration-200"
       style={{ backgroundColor: theme.background }}
     >
-      {/* ── Navigation Header ── */}
+      {/* ── Top nav bar ── */}
       <header
         className="sticky top-0 z-50 backdrop-blur-xl"
         style={{
@@ -340,223 +221,124 @@ export default function Documentation() {
           borderBottom: `1px solid ${theme.cardBorder}`,
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-5">
             <Link
               to="/"
               className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
               style={{ color: theme.textSecondary }}
             >
-              <ArrowLeft size={16} />
-              Back
+              <ArrowLeft size={15} />
+              Components
             </Link>
-            <div
-              className="hidden sm:block h-5 w-px"
-              style={{ backgroundColor: theme.cardBorder }}
-            />
-            <span
-              className="hidden sm:inline text-sm font-bold tracking-tight"
-              style={{ color: theme.textPrimary }}
-            >
-              Signum{' '}
-              <span style={{ color: theme.accent }}>UI</span>
+            <div className="hidden sm:block h-4 w-px" style={{ backgroundColor: theme.cardBorder }} />
+            <span className="hidden sm:inline text-sm font-bold tracking-tight" style={{ color: theme.textPrimary }}>
+              Signum <span style={{ color: theme.accent }}>UI</span>
+            </span>
+            <div className="hidden sm:block h-4 w-px" style={{ backgroundColor: theme.cardBorder }} />
+            <span className="hidden sm:inline text-[13px]" style={{ color: theme.textMuted }}>
+              Documentation
             </span>
           </div>
-          <nav className="flex items-center gap-1">
-            {[
-              { href: '#getting-started', label: 'Getting Started' },
-              { href: '#components', label: 'Components' },
-              { href: '#theming', label: 'Theming' },
-              { href: '#mcp-integration', label: 'MCP Integration' },
-            ].map((link) => (
+          <div className="flex items-center gap-1">
+            {NAV_SECTIONS.slice(0, 4).map(({ id, label }) => (
               <a
-                key={link.href}
-                href={link.href}
-                className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-70"
+                key={id}
+                href={`#${id}`}
+                className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
                 style={{ color: theme.textMuted }}
               >
-                {link.label}
+                {label}
               </a>
             ))}
-          </nav>
+          </div>
         </div>
       </header>
 
-      {/* ── Layout: Sidebar + Content ── */}
-      <div className="max-w-7xl mx-auto flex">
-        {/* Sticky Sidebar — desktop only */}
+      {/* ── Two-column layout ── */}
+      <div className="max-w-[1400px] mx-auto flex">
+
+        {/* ── Sticky sidebar (desktop) ── */}
         <aside
           className="hidden lg:block w-56 shrink-0 sticky top-14 self-start"
           style={{ height: 'calc(100vh - 3.5rem)' }}
         >
-          <nav className="py-8 pl-6 pr-4 flex flex-col gap-1">
-            {navItems.map(({ id, label, icon: Icon }) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-80"
-                style={{ color: theme.textSecondary }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = `${theme.accent}10`;
-                  (e.currentTarget as HTMLAnchorElement).style.color = theme.accent;
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent';
-                  (e.currentTarget as HTMLAnchorElement).style.color = theme.textSecondary;
-                }}
-              >
-                <Icon size={15} style={{ opacity: 0.7 }} />
-                {label}
-              </a>
-            ))}
-            <div
-              className="my-4 h-px"
-              style={{ backgroundColor: theme.cardBorder }}
-            />
-            <Link
-              to="/"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+          <nav className="py-10 pl-6 pr-4 flex flex-col gap-0.5">
+            <p
+              className="text-[11px] font-semibold uppercase tracking-widest mb-4 px-3"
               style={{ color: theme.textMuted }}
             >
-              <Sparkles size={15} style={{ opacity: 0.7 }} />
+              On this page
+            </p>
+            {NAV_SECTIONS.map(({ id, label }) => (
+              <SidebarLink key={id} id={id} label={label} active={activeSection === id} />
+            ))}
+
+            <div className="my-5 h-px" style={{ backgroundColor: theme.cardBorder }} />
+
+            <p
+              className="text-[11px] font-semibold uppercase tracking-widest mb-4 px-3"
+              style={{ color: theme.textMuted }}
+            >
+              Links
+            </p>
+            <Link
+              to="/"
+              className="block px-3 py-1.5 rounded-lg text-[13px] font-medium transition-opacity hover:opacity-70"
+              style={{ color: theme.textMuted }}
+            >
               Browse Components
             </Link>
             <Link
               to="/themes"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+              className="block px-3 py-1.5 rounded-lg text-[13px] font-medium transition-opacity hover:opacity-70"
               style={{ color: theme.textMuted }}
             >
-              <Palette size={15} style={{ opacity: 0.7 }} />
               Theme Gallery
             </Link>
+            <a
+              href="https://github.com/signum-ui"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-opacity hover:opacity-70"
+              style={{ color: theme.textMuted }}
+            >
+              GitHub
+              <ExternalLink size={11} />
+            </a>
           </nav>
         </aside>
 
-        {/* Main Content */}
+        {/* ── Main content ── */}
         <main className="flex-1 min-w-0">
-          {/* ── Hero Section ── */}
-          <section
-            style={{ borderBottom: `1px solid ${theme.cardBorder}` }}
-          >
-            <div
-              className="relative overflow-hidden"
-              style={{
-                background: `linear-gradient(180deg, ${theme.accent}06 0%, transparent 100%)`,
-              }}
-            >
-              <div className="max-w-4xl mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-20">
-                <div
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-6"
-                  style={{
-                    backgroundColor: `${theme.accent}12`,
-                    border: `1px solid ${theme.accent}25`,
-                    color: theme.accent,
-                  }}
-                >
-                  <Book size={12} />
-                  v1.0 Documentation
-                </div>
-                <h1
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
-                  style={{ color: theme.textPrimary }}
-                >
-                  Documentation
-                </h1>
-                <p
-                  className="mt-5 text-lg md:text-xl max-w-2xl leading-relaxed"
-                  style={{ color: theme.textSecondary }}
-                >
-                  Everything you need to build signal-grade data visualizations
-                </p>
 
-                <div className="mt-10">
-                  <p
-                    className="text-xs font-medium uppercase tracking-widest mb-3"
-                    style={{ color: theme.textMuted }}
-                  >
-                    Quick Start
-                  </p>
-                  <CodeBlock language="bash">{`$ npm install signum-ui
-$ # Import and use any of the 58 chart components
-$ # Themes are applied automatically via ThemeProvider`}</CodeBlock>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ── Getting Started ── */}
-          <Section id="getting-started">
-            <div className="flex items-center gap-3 mb-2">
-              <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{ backgroundColor: `${theme.accent}12` }}
-              >
-                <Package size={16} style={{ color: theme.accent }} />
-              </div>
-              <p
-                className="text-xs font-semibold uppercase tracking-widest"
-                style={{ color: theme.accent }}
-              >
+          {/* ============================================================ */}
+          {/*  GETTING STARTED                                              */}
+          {/* ============================================================ */}
+          <section id="getting-started" className="scroll-mt-16" style={{ borderBottom: `1px solid ${theme.cardBorder}` }}>
+            <div className="max-w-3xl mx-auto px-6 py-20 md:py-24">
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-6" style={{ color: theme.accent }}>
                 Getting Started
               </p>
-            </div>
-            <h2
-              className="text-3xl md:text-4xl font-bold tracking-tight mt-3"
-              style={{ color: theme.textPrimary }}
-            >
-              Installation
-            </h2>
-            <p
-              className="mt-4 text-base leading-relaxed max-w-2xl"
-              style={{ color: theme.textSecondary }}
-            >
-              Get up and running with Signum UI in under two minutes. Install the
-              package, wrap your app with the ThemeProvider, and start using any
-              of the 58 chart components right away.
-            </p>
+              {sectionHeading(
+                'Installation',
+                'Get up and running with Signum UI in under two minutes. Install the package, wrap your app with the ThemeProvider, and start rendering any of the 58 chart components.',
+              )}
 
-            {/* Step 1 */}
-            <div className="mt-12">
-              <div className="flex items-baseline gap-3 mb-4">
-                <span
-                  className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
-                  style={{
-                    backgroundColor: theme.accent,
-                    color: '#fff',
-                  }}
-                >
-                  1
-                </span>
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: theme.textPrimary }}
-                >
-                  Install the package
-                </h3>
-              </div>
-              <CodeBlock language="bash">{`$ npm install signum-ui`}</CodeBlock>
-            </div>
+              {/* Install */}
+              <h3 className="text-sm font-semibold mb-3 mt-12" style={{ color: theme.textPrimary }}>
+                1. Install the package
+              </h3>
+              <CodeBlock filename="terminal">
+{`npm install signum-ui`}
+              </CodeBlock>
 
-            {/* Step 2 */}
-            <div className="mt-10">
-              <div className="flex items-baseline gap-3 mb-4">
-                <span
-                  className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
-                  style={{
-                    backgroundColor: theme.accent,
-                    color: '#fff',
-                  }}
-                >
-                  2
-                </span>
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: theme.textPrimary }}
-                >
-                  Set up the provider
-                </h3>
-              </div>
-              <CodeBlock language="tsx">{`import { ThemeProvider } from 'signum-ui';
+              {/* Provider setup */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                2. Set up the provider
+              </h3>
+              <CodeBlock filename="App.tsx">
+{`import { ThemeProvider } from 'signum-ui';
 import { AreaChart } from 'signum-ui';
 
 function App() {
@@ -568,36 +350,21 @@ function App() {
 }
 
 function Dashboard() {
-  const monthlyRevenue = [
+  const data = [
     { month: 'Jan', revenue: 4200 },
     { month: 'Feb', revenue: 5800 },
     { month: 'Mar', revenue: 7100 },
   ];
 
-  return <AreaChart data={monthlyRevenue} />;
-}`}</CodeBlock>
-            </div>
+  return <AreaChart data={data} />;
+}`}
+              </CodeBlock>
 
-            {/* Requirements */}
-            <div className="mt-10">
-              <div className="flex items-baseline gap-3 mb-4">
-                <span
-                  className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
-                  style={{
-                    backgroundColor: theme.accent,
-                    color: '#fff',
-                  }}
-                >
-                  3
-                </span>
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: theme.textPrimary }}
-                >
-                  Requirements
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Requirements */}
+              <h3 className="text-sm font-semibold mb-4 mt-10" style={{ color: theme.textPrimary }}>
+                3. Requirements
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: 'React', value: '18+' },
                   { label: 'TypeScript', value: '5+' },
@@ -605,266 +372,131 @@ function Dashboard() {
                 ].map((req) => (
                   <div
                     key={req.label}
-                    className="rounded-xl p-4"
-                    style={{
-                      backgroundColor: theme.cardBg,
-                      border: `1px solid ${theme.cardBorder}`,
-                    }}
+                    className="rounded-lg px-4 py-3"
+                    style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.cardBorder}` }}
                   >
-                    <p
-                      className="text-xs font-medium uppercase tracking-wider"
-                      style={{ color: theme.textMuted }}
-                    >
+                    <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: theme.textMuted }}>
                       {req.label}
                     </p>
-                    <p
-                      className="text-xl font-bold mt-1"
-                      style={{ color: theme.textPrimary }}
-                    >
+                    <p className="text-lg font-bold mt-0.5" style={{ color: theme.textPrimary }}>
                       {req.value}
                     </p>
                   </div>
                 ))}
               </div>
             </div>
-          </Section>
+          </section>
 
-          {/* ── Components ── */}
-          <Section id="components">
-            <div className="flex items-center gap-3 mb-2">
-              <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{ backgroundColor: `${theme.accent}12` }}
-              >
-                <Layers size={16} style={{ color: theme.accent }} />
-              </div>
-              <p
-                className="text-xs font-semibold uppercase tracking-widest"
-                style={{ color: theme.accent }}
-              >
+          {/* ============================================================ */}
+          {/*  COMPONENTS                                                   */}
+          {/* ============================================================ */}
+          <section id="components" className="scroll-mt-16" style={{ borderBottom: `1px solid ${theme.cardBorder}` }}>
+            <div className="max-w-3xl mx-auto px-6 py-20 md:py-24">
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-6" style={{ color: theme.accent }}>
                 Components
               </p>
-            </div>
-            <h2
-              className="text-3xl md:text-4xl font-bold tracking-tight mt-3"
-              style={{ color: theme.textPrimary }}
-            >
-              58 Chart Components
-            </h2>
-            <p
-              className="mt-4 text-base leading-relaxed max-w-2xl"
-              style={{ color: theme.textSecondary }}
-            >
-              Signum UI ships 58 production-ready chart components across 7
-              categories. Every component accepts a{' '}
-              <code
-                className="text-sm px-1.5 py-0.5 rounded"
-                style={{
-                  backgroundColor: `${theme.accent}12`,
-                  color: theme.accent,
-                  fontFamily: 'monospace',
-                }}
-              >
-                data
-              </code>{' '}
-              prop and automatically adapts to the active theme.
-            </p>
+              {sectionHeading(
+                '58 Chart Components',
+                'Production-ready visualizations across 7 categories. Every component accepts a data prop and automatically adapts to the active theme.',
+              )}
 
-            {/* Category grid */}
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                {
-                  name: 'Lines & Areas',
-                  desc: 'Area charts, line charts, sparklines, step lines, multi-series lines, and area comparisons.',
-                },
-                {
-                  name: 'Bars & Columns',
-                  desc: 'Vertical bars, horizontal bars, stacked bars, grouped bars, diverging bars, and waterfall charts.',
-                },
-                {
-                  name: 'Pies & Radials',
-                  desc: 'Pie charts, donut charts, radial bars, progress rings, and nested radials.',
-                },
-                {
-                  name: 'Statistical',
-                  desc: 'Scatter plots, bubble charts, distribution plots, heatmaps, box plots, and correlation matrices.',
-                },
-                {
-                  name: 'Custom & Specialty',
-                  desc: 'Sankey diagrams, treemaps, funnel charts, candlestick charts, radar charts, and gauge visualizations.',
-                },
-                {
-                  name: 'Data Display',
-                  desc: 'Data tables, cohort tables, status grids, comparison tables, and structured data views.',
-                },
-                {
-                  name: 'KPI & Metrics',
-                  desc: 'KPI cards, metric tiles, score cards, progress indicators, and status badges.',
-                },
-              ].map((cat) => (
-                <div
-                  key={cat.name}
-                  className="rounded-xl p-5"
-                  style={{
-                    backgroundColor: theme.cardBg,
-                    border: `1px solid ${theme.cardBorder}`,
-                  }}
-                >
-                  <h3
-                    className="text-sm font-semibold"
-                    style={{ color: theme.textPrimary }}
+              {/* Category grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { name: 'Lines & Areas', desc: 'Area, line, sparkline, step line, multi-series, and area comparison charts.' },
+                  { name: 'Bars & Columns', desc: 'Vertical, horizontal, stacked, grouped, diverging, and waterfall charts.' },
+                  { name: 'Pies & Radials', desc: 'Pie, donut, radial bar, progress ring, and nested radial charts.' },
+                  { name: 'Statistical', desc: 'Scatter, bubble, distribution, heatmap, box plot, and correlation matrix.' },
+                  { name: 'Specialty', desc: 'Sankey, treemap, funnel, candlestick, radar, and gauge visualizations.' },
+                  { name: 'Data Display', desc: 'Data tables, cohort tables, status grids, and comparison tables.' },
+                  { name: 'KPI & Metrics', desc: 'KPI cards, metric tiles, score cards, progress indicators, and status badges.' },
+                ].map((cat) => (
+                  <div
+                    key={cat.name}
+                    className="rounded-lg px-4 py-4"
+                    style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.cardBorder}` }}
                   >
-                    {cat.name}
-                  </h3>
-                  <p
-                    className="text-sm mt-2 leading-relaxed"
-                    style={{ color: theme.textMuted }}
-                  >
-                    {cat.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
+                    <p className="text-sm font-semibold" style={{ color: theme.textPrimary }}>{cat.name}</p>
+                    <p className="text-[13px] mt-1.5 leading-relaxed" style={{ color: theme.textMuted }}>{cat.desc}</p>
+                  </div>
+                ))}
+              </div>
 
-            {/* Example usage */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: theme.textPrimary }}
-              >
-                Example Usage
+              {/* Basic usage */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                Basic usage
               </h3>
-              <CodeBlock language="tsx">{`import { AreaChart } from 'signum-ui';
+              <CodeBlock filename="Dashboard.tsx">
+{`import { AreaChart, BarChart, PieChart } from 'signum-ui';
 
 function Dashboard() {
-  return <AreaChart data={monthlyRevenue} />;
-}`}</CodeBlock>
-            </div>
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <AreaChart data={revenueData} />
+      <BarChart data={salesData} />
+      <PieChart data={marketShareData} />
+    </div>
+  );
+}`}
+              </CodeBlock>
 
-            <p
-              className="mt-6 text-sm leading-relaxed"
-              style={{ color: theme.textSecondary }}
-            >
-              All 58 components accept a{' '}
-              <code
-                className="text-xs px-1.5 py-0.5 rounded"
-                style={{
-                  backgroundColor: `${theme.accent}12`,
-                  color: theme.accent,
-                  fontFamily: 'monospace',
-                }}
-              >
-                data
-              </code>{' '}
-              prop and auto-adapt to the active theme. No extra configuration
-              required.
-            </p>
+              <p className="text-sm leading-relaxed mt-6" style={{ color: theme.textSecondary }}>
+                All 58 components accept a <InlineCode>data</InlineCode> prop and auto-adapt to the active theme. No extra configuration required.
+              </p>
 
-            <div className="mt-6">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
-                style={{ color: theme.accent }}
-              >
-                Browse all components
-                <ExternalLink size={14} />
-              </Link>
-            </div>
-          </Section>
-
-          {/* ── Theming ── */}
-          <Section id="theming">
-            <div className="flex items-center gap-3 mb-2">
-              <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{ backgroundColor: `${theme.accent}12` }}
-              >
-                <Palette size={16} style={{ color: theme.accent }} />
+              <div className="mt-5">
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
+                  style={{ color: theme.accent }}
+                >
+                  Browse all components
+                  <ExternalLink size={13} />
+                </Link>
               </div>
-              <p
-                className="text-xs font-semibold uppercase tracking-widest"
-                style={{ color: theme.accent }}
-              >
+            </div>
+          </section>
+
+          {/* ============================================================ */}
+          {/*  THEMING                                                      */}
+          {/* ============================================================ */}
+          <section id="theming" className="scroll-mt-16" style={{ borderBottom: `1px solid ${theme.cardBorder}` }}>
+            <div className="max-w-3xl mx-auto px-6 py-20 md:py-24">
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-6" style={{ color: theme.accent }}>
                 Theming
               </p>
-            </div>
-            <h2
-              className="text-3xl md:text-4xl font-bold tracking-tight mt-3"
-              style={{ color: theme.textPrimary }}
-            >
-              50 Built-in Themes
-            </h2>
-            <p
-              className="mt-4 text-base leading-relaxed max-w-2xl"
-              style={{ color: theme.textSecondary }}
-            >
-              Signum UI includes 50 professionally designed themes organized in
-              three collections: <strong>Light</strong> (17 themes),{' '}
-              <strong>Dark</strong> (24 themes), and{' '}
-              <strong>Special</strong> (9 themes). Themes cascade automatically
-              to every chart component.
-            </p>
+              {sectionHeading(
+                '50 Built-in Themes',
+                'Professionally designed themes across three collections. Themes cascade automatically to every chart component via ThemeProvider.',
+              )}
 
-            {/* Theme categories */}
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                {
-                  label: 'Light',
-                  count: 17,
-                  examples: 'Snow, Pearl, Ocean, Forest, Lavender',
-                },
-                {
-                  label: 'Dark',
-                  count: 24,
-                  examples: 'Midnight, Dracula, Nord, Tokyo Night, Catppuccin',
-                },
-                {
-                  label: 'Special',
-                  count: 9,
-                  examples: 'Candy, Retro, Hacker, Bubblegum, Monochrome',
-                },
-              ].map((group) => (
-                <div
-                  key={group.label}
-                  className="rounded-xl p-5"
-                  style={{
-                    backgroundColor: theme.cardBg,
-                    border: `1px solid ${theme.cardBorder}`,
-                  }}
-                >
-                  <div className="flex items-baseline justify-between">
-                    <h3
-                      className="text-sm font-semibold"
-                      style={{ color: theme.textPrimary }}
-                    >
-                      {group.label}
-                    </h3>
-                    <span
-                      className="text-xs font-mono"
-                      style={{ color: theme.textMuted }}
-                    >
-                      {group.count} themes
-                    </span>
-                  </div>
-                  <p
-                    className="text-xs mt-2 leading-relaxed"
-                    style={{ color: theme.textMuted }}
+              {/* Theme collections */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { label: 'Light', count: 17, examples: 'Snow, Pearl, Ocean, Forest, Lavender, Sky' },
+                  { label: 'Dark', count: 24, examples: 'Midnight, Dracula, Nord, Tokyo Night, Catppuccin' },
+                  { label: 'Special', count: 9, examples: 'Candy, Retro, Hacker, Bubblegum, Monochrome' },
+                ].map((g) => (
+                  <div
+                    key={g.label}
+                    className="rounded-lg px-4 py-4"
+                    style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.cardBorder}` }}
                   >
-                    {group.examples}
-                  </p>
-                </div>
-              ))}
-            </div>
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-sm font-semibold" style={{ color: theme.textPrimary }}>{g.label}</p>
+                      <span className="text-[11px] font-mono" style={{ color: theme.textMuted }}>{g.count}</span>
+                    </div>
+                    <p className="text-[12px] mt-1.5 leading-relaxed" style={{ color: theme.textMuted }}>{g.examples}</p>
+                  </div>
+                ))}
+              </div>
 
-            {/* ThemeProvider usage */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: theme.textPrimary }}
-              >
-                Using ThemeProvider
+              {/* ThemeProvider */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                ThemeProvider usage
               </h3>
-              <CodeBlock language="tsx">{`import { ThemeProvider } from 'signum-ui';
+              <CodeBlock filename="App.tsx">
+{`import { ThemeProvider } from 'signum-ui';
 
 function App() {
   return (
@@ -872,37 +504,41 @@ function App() {
       <Dashboard />
     </ThemeProvider>
   );
-}`}</CodeBlock>
-            </div>
+}`}
+              </CodeBlock>
 
-            {/* Custom theme */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: theme.textPrimary }}
-              >
-                Creating a Custom Theme
+              {/* Accessing theme */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                Accessing the theme
               </h3>
-              <p
-                className="text-sm leading-relaxed mb-4 max-w-2xl"
-                style={{ color: theme.textSecondary }}
-              >
-                Every theme implements the{' '}
-                <code
-                  className="text-xs px-1.5 py-0.5 rounded"
-                  style={{
-                    backgroundColor: `${theme.accent}12`,
-                    color: theme.accent,
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  ChartTheme
-                </code>{' '}
-                interface. Create your own by defining all required properties:
-              </p>
-              <CodeBlock language="tsx">{`import type { ChartTheme } from 'signum-ui';
+              <CodeBlock filename="Component.tsx">
+{`import { useTheme } from 'signum-ui';
 
-const myTheme: ChartTheme = {
+function Component() {
+  const { theme, themeName, setThemeName } = useTheme();
+
+  return (
+    <div style={{ color: theme.textPrimary }}>
+      Current theme: {themeName}
+      <button onClick={() => setThemeName('dracula')}>
+        Switch to Dracula
+      </button>
+    </div>
+  );
+}`}
+              </CodeBlock>
+
+              {/* Custom theme */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                Creating a custom theme
+              </h3>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: theme.textSecondary }}>
+                Every theme implements the <InlineCode>ChartTheme</InlineCode> interface. Create your own by defining all required properties:
+              </p>
+              <CodeBlock filename="custom-theme.ts">
+{`import type { ChartTheme } from 'signum-ui';
+
+const brandTheme: ChartTheme = {
   name: 'Brand',
   colors: ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#7c3aed', '#4f46e5'],
   background: '#ffffff',
@@ -917,123 +553,65 @@ const myTheme: ChartTheme = {
   accent: '#6366f1',
   positive: '#10b981',
   negative: '#ef4444',
-};`}</CodeBlock>
-            </div>
+};`}
+              </CodeBlock>
 
-            <div className="mt-6">
-              <Link
-                to="/themes"
-                className="inline-flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
-                style={{ color: theme.accent }}
-              >
-                Explore the Theme Gallery
-                <ExternalLink size={14} />
-              </Link>
-            </div>
-          </Section>
-
-          {/* ── MCP Integration ── */}
-          <Section id="mcp-integration">
-            <div className="flex items-center gap-3 mb-2">
-              <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{ backgroundColor: `${theme.accent}12` }}
-              >
-                <Cpu size={16} style={{ color: theme.accent }} />
+              <div className="mt-5">
+                <Link
+                  to="/themes"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
+                  style={{ color: theme.accent }}
+                >
+                  Explore the Theme Gallery
+                  <ExternalLink size={13} />
+                </Link>
               </div>
-              <p
-                className="text-xs font-semibold uppercase tracking-widest"
-                style={{ color: theme.accent }}
-              >
+            </div>
+          </section>
+
+          {/* ============================================================ */}
+          {/*  MCP INTEGRATION                                              */}
+          {/* ============================================================ */}
+          <section id="mcp" className="scroll-mt-16" style={{ borderBottom: `1px solid ${theme.cardBorder}` }}>
+            <div className="max-w-3xl mx-auto px-6 py-20 md:py-24">
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-6" style={{ color: theme.accent }}>
                 MCP Integration
               </p>
-            </div>
-            <h2
-              className="text-3xl md:text-4xl font-bold tracking-tight mt-3"
-              style={{ color: theme.textPrimary }}
-            >
-              Model Context Protocol
-            </h2>
-            <p
-              className="mt-4 text-base leading-relaxed max-w-2xl"
-              style={{ color: theme.textSecondary }}
-            >
-              Signum UI is designed for the AI-native web. Through the Model
-              Context Protocol (MCP), AI agents and LLM pipelines can
-              programmatically render charts, switch themes, and embed
-              visualizations in any context without manual coding.
-            </p>
+              {sectionHeading(
+                'Model Context Protocol',
+                'Signum UI is designed for the AI-native web. Through MCP, AI agents can programmatically render charts, switch themes, and embed visualizations without manual coding.',
+              )}
 
-            {/* How it works */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-3"
-                style={{ color: theme.textPrimary }}
-              >
-                How It Works
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* How it works */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  {
-                    step: '1',
-                    title: 'Define Tools',
-                    desc: 'Register Signum chart components as MCP tool definitions available to any AI agent.',
-                  },
-                  {
-                    step: '2',
-                    title: 'Agent Requests',
-                    desc: 'The LLM selects a chart type, passes data and an optional theme via the tool call.',
-                  },
-                  {
-                    step: '3',
-                    title: 'Auto-Render',
-                    desc: 'The component serializes and renders in the host context: web, Electron, or headless.',
-                  },
+                  { step: '1', title: 'Define Tools', desc: 'Register Signum chart components as MCP tool definitions available to any AI agent.' },
+                  { step: '2', title: 'Agent Requests', desc: 'The LLM selects a chart type and passes data and an optional theme via the tool call.' },
+                  { step: '3', title: 'Auto-Render', desc: 'The component serializes and renders in the host context: web, Electron, or headless.' },
                 ].map((s) => (
                   <div
                     key={s.step}
-                    className="rounded-xl p-5"
-                    style={{
-                      backgroundColor: theme.cardBg,
-                      border: `1px solid ${theme.cardBorder}`,
-                    }}
+                    className="rounded-lg px-4 py-4"
+                    style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.cardBorder}` }}
                   >
                     <span
                       className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold mb-3"
-                      style={{
-                        backgroundColor: `${theme.accent}18`,
-                        color: theme.accent,
-                      }}
+                      style={{ backgroundColor: `${theme.accent}14`, color: theme.accent }}
                     >
                       {s.step}
                     </span>
-                    <h4
-                      className="text-sm font-semibold"
-                      style={{ color: theme.textPrimary }}
-                    >
-                      {s.title}
-                    </h4>
-                    <p
-                      className="text-sm mt-1.5 leading-relaxed"
-                      style={{ color: theme.textMuted }}
-                    >
-                      {s.desc}
-                    </p>
+                    <p className="text-sm font-semibold" style={{ color: theme.textPrimary }}>{s.title}</p>
+                    <p className="text-[13px] mt-1 leading-relaxed" style={{ color: theme.textMuted }}>{s.desc}</p>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* MCP Server Tool */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: theme.textPrimary }}
-              >
-                MCP Server Tool Definition
+              {/* Tool definition */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                MCP server tool definition
               </h3>
-              <CodeBlock language="tsx">{`// MCP server tool definition
-const renderChartTool = {
+              <CodeBlock filename="mcp-server.ts">
+{`const renderChartTool = {
   name: 'render_chart',
   description: 'Renders a Signum UI chart component with data and theme',
   inputSchema: {
@@ -1045,25 +623,18 @@ const renderChartTool = {
     },
     required: ['type', 'data'],
   },
-};`}</CodeBlock>
-            </div>
+};`}
+              </CodeBlock>
 
-            {/* Agent request example */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: theme.textPrimary }}
-              >
-                AI Agent Request
+              {/* Agent request */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                AI agent request
               </h3>
-              <p
-                className="text-sm leading-relaxed mb-4 max-w-2xl"
-                style={{ color: theme.textSecondary }}
-              >
-                When an AI agent decides to visualize data, it sends a
-                structured tool call. Signum UI handles the rest:
+              <p className="text-sm leading-relaxed mb-4" style={{ color: theme.textSecondary }}>
+                When an AI agent decides to visualize data, it sends a structured tool call. Signum UI handles the rest:
               </p>
-              <CodeBlock language="json">{`{
+              <CodeBlock filename="tool-call.json">
+{`{
   "tool": "render_chart",
   "params": {
     "type": "AreaChart",
@@ -1075,244 +646,140 @@ const renderChartTool = {
     ],
     "theme": "midnight"
   }
-}`}</CodeBlock>
-            </div>
+}`}
+              </CodeBlock>
 
-            <div
-              className="mt-8 rounded-xl p-5"
-              style={{
-                backgroundColor: `${theme.accent}08`,
-                border: `1px solid ${theme.accent}20`,
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <Sparkles
-                  size={18}
-                  className="shrink-0 mt-0.5"
-                  style={{ color: theme.accent }}
-                />
-                <div>
-                  <p
-                    className="text-sm font-semibold"
-                    style={{ color: theme.textPrimary }}
-                  >
-                    Auto-Serialization
-                  </p>
-                  <p
-                    className="text-sm mt-1 leading-relaxed"
-                    style={{ color: theme.textSecondary }}
-                  >
-                    Every Signum UI component auto-serializes its output. This
-                    means charts can be embedded in web apps, Electron
-                    containers, notebook environments, or streamed as part of an
-                    LLM response without any extra setup.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Section>
+              {/* Embedding */}
+              <h3 className="text-sm font-semibold mb-3 mt-10" style={{ color: theme.textPrimary }}>
+                Embedding in any context
+              </h3>
+              <CodeBlock filename="embed.tsx">
+{`import { renderToString } from 'signum-ui/server';
 
-          {/* ── API Reference ── */}
-          <Section id="api-reference" noBorder>
-            <div className="flex items-center gap-3 mb-2">
+// Server-side rendering for headless environments
+const svg = await renderToString({
+  type: 'AreaChart',
+  data: revenueData,
+  theme: 'midnight',
+  width: 600,
+  height: 300,
+});
+
+// Embed in Markdown, HTML emails, or LLM responses
+const markdown = \`![Revenue Chart](data:image/svg+xml,\${encodeURIComponent(svg)})\`;`}
+              </CodeBlock>
+
+              {/* Callout */}
               <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{ backgroundColor: `${theme.accent}12` }}
+                className="mt-8 rounded-lg px-5 py-4"
+                style={{
+                  backgroundColor: `${theme.accent}06`,
+                  border: `1px solid ${theme.accent}18`,
+                }}
               >
-                <Code size={16} style={{ color: theme.accent }} />
+                <p className="text-sm font-semibold" style={{ color: theme.textPrimary }}>
+                  Auto-Serialization
+                </p>
+                <p className="text-[13px] mt-1 leading-relaxed" style={{ color: theme.textSecondary }}>
+                  Every Signum UI component auto-serializes its output. Charts can be embedded in web apps, Electron containers, notebook environments, or streamed as part of an LLM response without any extra setup.
+                </p>
               </div>
-              <p
-                className="text-xs font-semibold uppercase tracking-widest"
-                style={{ color: theme.accent }}
-              >
+            </div>
+          </section>
+
+          {/* ============================================================ */}
+          {/*  API REFERENCE                                                */}
+          {/* ============================================================ */}
+          <section id="api" className="scroll-mt-16">
+            <div className="max-w-3xl mx-auto px-6 py-20 md:py-24">
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-6" style={{ color: theme.accent }}>
                 API Reference
               </p>
-            </div>
-            <h2
-              className="text-3xl md:text-4xl font-bold tracking-tight mt-3"
-              style={{ color: theme.textPrimary }}
-            >
-              Props & Events
-            </h2>
-            <p
-              className="mt-4 text-base leading-relaxed max-w-2xl"
-              style={{ color: theme.textSecondary }}
-            >
-              All chart components share a common set of props. Here is the
-              reference for the most frequently used properties.
-            </p>
+              {sectionHeading(
+                'Props & Events',
+                'All chart components share a common set of props. Here is the reference for the most frequently used properties.',
+              )}
 
-            {/* Common Props */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: theme.textPrimary }}
-              >
-                Common Chart Props
+              {/* Common props */}
+              <h3 className="text-sm font-semibold mb-4" style={{ color: theme.textPrimary }}>
+                Common chart props
               </h3>
               <PropsTable
                 rows={[
-                  {
-                    prop: 'data',
-                    type: 'object[]',
-                    default: 'required',
-                    description:
-                      'Accepts any array of objects. Key names are auto-mapped to axes and series. This is the only required prop.',
-                  },
-                  {
-                    prop: 'theme',
-                    type: 'string | ChartTheme',
-                    default: 'inherited',
-                    description:
-                      'Optional. Pass a theme name or a custom ChartTheme object. When omitted, the component inherits the theme from the nearest ThemeProvider.',
-                  },
-                  {
-                    prop: 'width',
-                    type: 'number | string',
-                    default: '"100%"',
-                    description:
-                      'Sets the width of the chart container. Accepts pixels or a CSS string.',
-                  },
-                  {
-                    prop: 'height',
-                    type: 'number | string',
-                    default: '"auto"',
-                    description:
-                      'Sets the height of the chart container. Defaults to the aspect ratio of the chart type.',
-                  },
-                  {
-                    prop: 'title',
-                    type: 'string',
-                    default: 'undefined',
-                    description:
-                      'Optional title rendered above the chart area with theme-aware typography.',
-                  },
-                  {
-                    prop: 'subtitle',
-                    type: 'string',
-                    default: 'undefined',
-                    description:
-                      'Optional subtitle rendered below the title in muted text.',
-                  },
-                  {
-                    prop: 'animated',
-                    type: 'boolean',
-                    default: 'true',
-                    description:
-                      'Enables entrance and update animations. Set to false for static rendering or SSR.',
-                  },
-                  {
-                    prop: 'className',
-                    type: 'string',
-                    default: 'undefined',
-                    description:
-                      'Additional CSS class names applied to the root chart container.',
-                  },
+                  { prop: 'data', type: 'object[]', default: 'required', desc: 'Array of data objects. Key names are auto-mapped to axes and series.' },
+                  { prop: 'theme', type: 'string | ChartTheme', default: 'inherited', desc: 'Theme name or custom ChartTheme object. Inherits from nearest ThemeProvider when omitted.' },
+                  { prop: 'width', type: 'number | string', default: '"100%"', desc: 'Width of the chart container. Accepts pixels or a CSS string value.' },
+                  { prop: 'height', type: 'number | string', default: '"auto"', desc: 'Height of the chart container. Defaults to the aspect ratio of the chart type.' },
+                  { prop: 'title', type: 'string', default: 'undefined', desc: 'Optional title rendered above the chart area with theme-aware typography.' },
+                  { prop: 'subtitle', type: 'string', default: 'undefined', desc: 'Optional subtitle rendered below the title in muted text.' },
+                  { prop: 'animated', type: 'boolean', default: 'true', desc: 'Enables entrance and update animations. Set to false for static rendering or SSR.' },
+                  { prop: 'className', type: 'string', default: 'undefined', desc: 'Additional CSS class names applied to the root chart container.' },
                 ]}
               />
-            </div>
 
-            {/* Events */}
-            <div className="mt-10">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: theme.textPrimary }}
-              >
+              {/* Events */}
+              <h3 className="text-sm font-semibold mb-4 mt-12" style={{ color: theme.textPrimary }}>
                 Events
               </h3>
               <PropsTable
                 rows={[
-                  {
-                    prop: 'onClick',
-                    type: '(point: DataPoint) => void',
-                    default: 'undefined',
-                    description:
-                      'Fires when a data point or segment is clicked. Receives the associated data object.',
-                  },
-                  {
-                    prop: 'onHover',
-                    type: '(point: DataPoint | null) => void',
-                    default: 'undefined',
-                    description:
-                      'Fires on mouse enter/leave over data points. Receives null when the cursor leaves the chart.',
-                  },
+                  { prop: 'onClick', type: '(point: DataPoint) => void', default: 'undefined', desc: 'Fires when a data point or segment is clicked.' },
+                  { prop: 'onHover', type: '(point: DataPoint | null) => void', default: 'undefined', desc: 'Fires on mouse enter/leave over data points. Receives null when cursor leaves.' },
                 ]}
               />
+
+              {/* ChartTheme interface */}
+              <h3 className="text-sm font-semibold mb-3 mt-12" style={{ color: theme.textPrimary }}>
+                ChartTheme interface
+              </h3>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: theme.textSecondary }}>
+                The complete type definition for theme objects:
+              </p>
+              <CodeBlock filename="types.ts">
+{`interface ChartTheme {
+  name: string;
+  colors: string[];        // Array of 6 chart colors
+  background: string;      // Page background
+  cardBg: string;          // Card background
+  cardBorder: string;      // Card and divider borders
+  textPrimary: string;     // Headings and emphasis
+  textSecondary: string;   // Body text
+  textMuted: string;       // Captions and hints
+  gridColor: string;       // Chart grid lines
+  tooltipBg: string;       // Tooltip background
+  tooltipBorder: string;   // Tooltip border
+  accent: string;          // Brand / accent color
+  positive: string;        // Success / growth
+  negative: string;        // Error / decline
+}`}
+              </CodeBlock>
+
+              {/* Upcoming */}
               <div
-                className="mt-4 rounded-xl p-4"
-                style={{
-                  backgroundColor: theme.cardBg,
-                  border: `1px solid ${theme.cardBorder}`,
-                }}
+                className="mt-8 rounded-lg px-5 py-4"
+                style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.cardBorder}` }}
               >
-                <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: theme.textMuted }}
-                >
-                  <strong style={{ color: theme.textSecondary }}>
-                    Coming in v2:
-                  </strong>{' '}
-                  Additional event handlers including{' '}
-                  <code
-                    className="text-xs px-1 py-0.5 rounded"
-                    style={{
-                      backgroundColor: `${theme.accent}12`,
-                      color: theme.accent,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    onBrush
-                  </code>
-                  ,{' '}
-                  <code
-                    className="text-xs px-1 py-0.5 rounded"
-                    style={{
-                      backgroundColor: `${theme.accent}12`,
-                      color: theme.accent,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    onZoom
-                  </code>
-                  , and{' '}
-                  <code
-                    className="text-xs px-1 py-0.5 rounded"
-                    style={{
-                      backgroundColor: `${theme.accent}12`,
-                      color: theme.accent,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    onSelectionChange
-                  </code>{' '}
-                  for interactive data exploration workflows.
+                <p className="text-sm leading-relaxed" style={{ color: theme.textMuted }}>
+                  <span className="font-semibold" style={{ color: theme.textSecondary }}>Coming in v2: </span>
+                  Additional event handlers including <InlineCode>onBrush</InlineCode>, <InlineCode>onZoom</InlineCode>, and <InlineCode>onSelectionChange</InlineCode> for interactive data exploration workflows.
                 </p>
               </div>
             </div>
-          </Section>
+          </section>
 
           {/* ── Footer ── */}
-          <footer
-            style={{ borderTop: `1px solid ${theme.cardBorder}` }}
-          >
-            <div className="max-w-4xl mx-auto px-6 py-12 md:py-16">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <footer style={{ borderTop: `1px solid ${theme.cardBorder}` }}>
+            <div className="max-w-3xl mx-auto px-6 py-14">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <p
-                    className="text-sm font-bold tracking-tight"
-                    style={{ color: theme.textPrimary }}
-                  >
-                    Signum{' '}
-                    <span style={{ color: theme.accent }}>UI</span>
+                  <p className="text-sm font-bold tracking-tight" style={{ color: theme.textPrimary }}>
+                    Signum <span style={{ color: theme.accent }}>UI</span>
                   </p>
-                  <p
-                    className="text-xs mt-1"
-                    style={{ color: theme.textMuted }}
-                  >
+                  <p className="text-xs mt-1" style={{ color: theme.textMuted }}>
                     Signal-grade visualization for the AI-native web.
                   </p>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-5">
                   <a
                     href="https://github.com/signum-ui"
                     target="_blank"
@@ -1323,36 +790,30 @@ const renderChartTool = {
                     GitHub
                     <ExternalLink size={11} />
                   </a>
-                  <a
-                    href="#getting-started"
+                  <Link
+                    to="/"
                     className="text-xs font-medium transition-opacity hover:opacity-70"
                     style={{ color: theme.textMuted }}
                   >
-                    Docs
-                  </a>
+                    Components
+                  </Link>
                   <Link
                     to="/themes"
                     className="text-xs font-medium transition-opacity hover:opacity-70"
                     style={{ color: theme.textMuted }}
                   >
-                    Theme Gallery
+                    Themes
                   </Link>
                 </div>
               </div>
-              <div
-                className="mt-8 pt-6"
-                style={{ borderTop: `1px solid ${theme.cardBorder}` }}
-              >
-                <p
-                  className="text-xs"
-                  style={{ color: theme.textMuted }}
-                >
-                  MIT License. Built for dashboards, analytics, AI agents, and
-                  real-time data pipelines.
+              <div className="mt-6 pt-5" style={{ borderTop: `1px solid ${theme.cardBorder}` }}>
+                <p className="text-xs" style={{ color: theme.textMuted }}>
+                  MIT License. Built for dashboards, analytics, AI agents, and real-time data pipelines.
                 </p>
               </div>
             </div>
           </footer>
+
         </main>
       </div>
     </div>
